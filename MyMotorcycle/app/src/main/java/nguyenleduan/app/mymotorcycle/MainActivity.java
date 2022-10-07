@@ -6,12 +6,14 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.wifi.hotspot2.pps.HomeSp;
 import android.os.AsyncTask;
@@ -24,33 +26,38 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.nio.file.attribute.AttributeView;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Spinner spListBT;
     private String address = "";
     private BluetoothAdapter myBluetooth = null;
     private Set<BluetoothDevice> pairedDevices;
     public static String EXTRA_ADDRESS = "device_address";
     Intent mServiceIntent;
     private Serviced mYourService;
-    ImageView imgDisconnectBluetooth;
+    ImageView imgDisconnectBluetooth,imgBT,imgSetting,imgSetTime,imgStartUp,imgCoi,imgOnOff;
     private ProgressDialog progress;
     BluetoothAdapter myBluetoothConnect = null;
+    TextView tvAddress;
     BluetoothSocket btSocket = null;
+    ArrayList list = new ArrayList();
     private boolean isBtConnected = false;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    static final String MY_PREFS_NAME = "MyPrefsFile";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getCache();
         setUp();
         Window window = this.getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -73,6 +80,10 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(turnBTon, 1);
         }
         pairedDevicesList();
+        Log.d("MMMMMM----------Address",DataSetting.addressConnect+" -----????");
+        if( !DataSetting.addressConnect.isEmpty() && DataSetting.btSocket == null){
+            new  ConnectBT().execute();
+        }
     }
 
 
@@ -80,36 +91,138 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
     }
     private void sendSignal ( String number ) {
-        if ( btSocket != null ) {
+        if ( DataSetting.btSocket != null ) {
             try {
-                btSocket.getOutputStream().write(number.toString().getBytes());
+                DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
             } catch (IOException e) {
                 msg("Error");
             }
         }
     }
-    private void setUp() {
-        spListBT = findViewById(R.id.spListBT);
-        imgDisconnectBluetooth = findViewById(R.id.imgDisconnectBluetooth);
-        spListBT.setPrompt("Chọn Bt");
-        spListBT.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+    Dialog dialog;
+    void dialogBluetooth(){
+         dialog = new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(false);
+        dialog.setContentView(R.layout.dialog_bluetooth);
+        ImageView imgOK = dialog.findViewById(R.id.imgOK);
+        Spinner spList = dialog.findViewById(R.id.spList);
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item,list);
+        adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
+        spList.setAdapter(adapter);
+        spList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                new  ConnectBT().execute();
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String info = ((TextView) view).getText().toString();
+                if(info.equals("Chọn Bluetooth")){
+                    Disconnect();
+                    DataSetting.addressConnect ="";
+                    DataSetting.isConnect = false;
+                    tvAddress.setText("Chưa có kết nối :(");
+                }else{
+                    DataSetting.addressConnect = info.substring(info.length()-17);
+                    new  ConnectBT().execute();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        imgOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+
+    public void getCache() {
+        try {
+            SharedPreferences sharedPref = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+            DataSetting.addressConnect = sharedPref.getString(DataSetting.KeyAddress, "");
+        }catch (Exception e){
+            Log.d("Error cache", ""+e);
+        }
+    }
+    public void Save() {
+        SharedPreferences mPrefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+//        Gson gson = new Gson();
+//        String json = gson.toJson(DataSetting.arraySMSMain);
+        prefsEditor.putString(DataSetting.KeyAddress, DataSetting.addressConnect);
+        prefsEditor.apply();
+        Log.d("Save cache SMS", "----------Save cache success");
+    }
+    private void setUp() {
+        imgOnOff = findViewById(R.id.imgOnOff);
+        imgCoi = findViewById(R.id.imgCoi);
+        imgStartUp = findViewById(R.id.imgStartUp);
+        imgSetTime = findViewById(R.id.imgSetTime);
+        tvAddress = findViewById(R.id.tvAddress);
+        imgSetting = findViewById(R.id.imgSetting);
+        imgBT = findViewById(R.id.imgBT);
+        imgDisconnectBluetooth = findViewById(R.id.imgDisconnectBluetooth);
+        imgCoi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendSignal("3");
+                Log.d("SEND DATA","3");
+            }
+        });
+        imgStartUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendSignal("2");
+                Log.d("SEND DATA","2");
+            }
+        });
+        imgOnOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendSignal("1");
+                Log.d("SEND DATA","1");
+            }
+        });
+        imgOnOff.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                sendSignal("@");
+                Log.d("SEND DATA","5");
+                return true;
+            }
+        });
+        imgBT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogBluetooth();
             }
         });
         imgDisconnectBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                DataSetting.addressConnect ="";
+                DataSetting.isConnect = false;
+                tvAddress.setText("Chưa có kết nối :(");
                 Disconnect();
             }
         });
+        if(DataSetting.isConnect){
+            tvAddress.setText(DataSetting.addressConnect+"\n"+"Đã kết nối");
+        }else{
+            tvAddress.setText("");
+        }
     }
 
     private void Disconnect () {
-        if ( btSocket!=null ) {
+        if ( DataSetting.btSocket!=null ) {
             try {
-                btSocket.close();
+                msg("Đã ngắt kết nối !");
+                DataSetting.btSocket.close();
             } catch(IOException e) {
                 msg("Error");
             }
@@ -121,8 +234,8 @@ public class MainActivity extends AppCompatActivity {
             // check
         }
         pairedDevices = myBluetooth.getBondedDevices();
-        ArrayList list = new ArrayList();
-
+        list.clear();
+        list.add("Chọn Bluetooth");
         if ( pairedDevices.size() > 0 ) {
             for ( BluetoothDevice bt : pairedDevices ) {
                 list.add(bt.getName().toString() + "\n" + bt.getAddress().toString());
@@ -130,9 +243,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(getApplicationContext(), "No Paired Bluetooth Devices Found.", Toast.LENGTH_LONG).show();
         }
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item,list);
-                adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
-        spListBT.setAdapter(adapter);
     }
 
 
@@ -147,15 +257,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... devices) {
             try {
-                if (btSocket == null || !isBtConnected) {
+                if (DataSetting.btSocket == null || !DataSetting.isConnect  ) {
                     myBluetoothConnect = BluetoothAdapter.getDefaultAdapter();
-                    BluetoothDevice dis = myBluetoothConnect.getRemoteDevice(address);
+                    BluetoothDevice dis = myBluetoothConnect.getRemoteDevice(DataSetting.addressConnect);
                     if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
 
                     }
-                    btSocket = dis.createInsecureRfcommSocketToServiceRecord(myUUID);
+                    DataSetting.btSocket = dis.createInsecureRfcommSocketToServiceRecord(myUUID);
                     BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-                    btSocket.connect();
+                    DataSetting.btSocket.connect();
                 }
             } catch (IOException e) {
                 ConnectSuccess = false;
@@ -171,7 +281,12 @@ public class MainActivity extends AppCompatActivity {
                 msg("Kết nối thất bại !\n Vui lòng kiểm tra lại");
             } else {
                 msg("Connected");
-                isBtConnected = true;
+                if(dialog !=null){
+                    dialog.dismiss();
+                }
+                DataSetting.isConnect = true;
+                    tvAddress.setText(DataSetting.addressConnect+"\n"+"Đã kết nối");
+                Save();
             }
             progress.dismiss();
         }
