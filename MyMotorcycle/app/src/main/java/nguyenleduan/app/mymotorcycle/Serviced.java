@@ -9,12 +9,15 @@ import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -35,7 +38,6 @@ public class Serviced extends Service {
     TimerTask timerTask;
     public static int count = 1;
     BluetoothAdapter myBluetoothConnect = null;
-
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     BluetoothSocket btSocket = null;
     @Override
@@ -45,13 +47,19 @@ public class Serviced extends Service {
             startMyOwnForeground();
         else
             startForeground(1, new Notification());
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        BroadcastReceiver mReceiver = new ScreenReceiver();
+        registerReceiver(mReceiver, filter);
+        startTimerCallApi();
     }
+
 
     public void startTimerCallApi() {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-//                Log.i("Count", "=========  " + count);
+//                Log.i("Count", "---- " + count);
                 if(count == DataSetting.timeSearch){
                     Toaster.toast("App đang hoạt động...");
                     timer.cancel();
@@ -66,12 +74,11 @@ public class Serviced extends Service {
         timer.schedule(timerTask, 1000, 1000); //
     }
 
-    private void sendSignal ( String number ) {
-        Log.d("Send data service:","-----------!!!!!!------------------");
+    public void sendSignal ( String number ) {
+        Log.d("Send data service:","---------"+number+"---------");
         if ( DataSetting.btSocket != null ) {
             try {
                 DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
-                Log.d("Send data service:","11-----------------------------");
             } catch (IOException e) {
                 Toaster.toast("Send data error");
                 DataSetting.btSocket = null;
@@ -79,6 +86,10 @@ public class Serviced extends Service {
                 if(!DataSetting.addressConnect.isEmpty()){
                     new ConnectBT().execute();
                 }
+            }
+        }else{
+            if(!DataSetting.addressConnect.isEmpty()){
+                new ConnectBT().execute();
             }
         }
     }
@@ -109,10 +120,14 @@ public class Serviced extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         startTimerCallApi();
+        boolean screenOn = intent.getBooleanExtra("screen_state", true);
+        if (!screenOn) {
+            Log.d("1111111111","11111");
+        } else {
+            Log.d("222222222","11111");
+        }
         return START_STICKY;
     }
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -121,6 +136,7 @@ public class Serviced extends Service {
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction("restartservice");
         broadcastIntent.setClass(this, Restarter.class);
+
         this.sendBroadcast(broadcastIntent);
     }
 
@@ -148,6 +164,7 @@ public class Serviced extends Service {
 
         @Override
         protected Void doInBackground(Void... devices) {
+            Log.d("Quet xe","_______________________");
             try {
                 if (DataSetting.btSocket == null || !DataSetting.isConnect  ) {
                     myBluetoothConnect = BluetoothAdapter.getDefaultAdapter();

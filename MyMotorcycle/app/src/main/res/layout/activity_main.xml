@@ -88,6 +88,20 @@
         app:layout_constraintTop_toBottomOf="@+id/imgSetting" />
 
     <TextView
+        android:id="@+id/tvStartUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Cài đặt"
+        android:textAlignment="center"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
         android:id="@+id/textView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -100,6 +114,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imgSetting"
         app:layout_constraintTop_toBottomOf="@+id/imgSetTime" />
+
+    <TextView
+        android:id="@+id/tvCoi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Thời gian quét"
+        android:textAlignment="center"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imgCoi"
+        app:layout_constraintStart_toStartOf="@+id/imgCoi"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <TextView
         android:id="@+id/textView3"
