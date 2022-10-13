@@ -51,7 +51,7 @@ public class Serviced extends Service {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-                Log.i("Count", "=========  " + count);
+//                Log.i("Count", "=========  " + count);
                 if(count == DataSetting.timeSearch){
                     Toaster.toast("App đang hoạt động...");
                     timer.cancel();

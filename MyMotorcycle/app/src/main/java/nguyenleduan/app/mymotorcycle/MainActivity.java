@@ -24,7 +24,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -140,11 +142,102 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    void dialogLinkApi(){
+        final Dialog dialog = new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.dialog_set_time);
+        MultiAutoCompleteTextView edit  = dialog.findViewById(R.id.edtLink);
+        Button dialogButton = dialog.findViewById(R.id.btChangeLink);
+        Button dialogButtonBack = dialog.findViewById(R.id.dialogButtonBack);
+        edit.setText(""+DataSetting.timeSearch);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DataSetting.timeSearch = Integer.parseInt(edit.getText()+"");
+                Save();
+                dialog.dismiss();
+            }
+        });
+        dialogButtonBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+    void dialogSetting(){
+         dialog = new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.dialog_setting);
+        ImageView imgOK = dialog.findViewById(R.id.imgOK);
+        Spinner spStartUp = dialog.findViewById(R.id.spStartUp);
+        Spinner spCoi = dialog.findViewById(R.id.spCoi);
+
+
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item,DataSetting.listCoi);
+        adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
+        spCoi.setAdapter(adapter);
+        spCoi.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+               String info  = ((TextView) view).getText().toString();
+               if(!info.equals("Chọn setting")){
+                   DataSetting.mCoi =info;
+                   Log.d("-------Coi", DataSetting.mCoi+"");
+               }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        imgOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Save();
+                dialog.dismiss();
+            }
+        });
+        ArrayAdapter adapterStartUp = new ArrayAdapter(this, android.R.layout.simple_spinner_item,DataSetting.listStartUp);
+        adapterStartUp.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
+        spStartUp.setAdapter(adapterStartUp);
+        spStartUp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String info  = ((TextView) view).getText().toString();
+                if(!info.equals("Chọn setting")){
+                    DataSetting.mStartUp =info;
+                    Log.d("-------Start up", DataSetting.mStartUp+"");
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        imgOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
 
     public void getCache() {
         try {
             SharedPreferences sharedPref = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
             DataSetting.addressConnect = sharedPref.getString(DataSetting.KeyAddress, "");
+            DataSetting.mCoi = sharedPref.getString(DataSetting.KeyCoi, "Nhịp 1");
+            DataSetting.mPower = sharedPref.getString(DataSetting.KeyPower, "Start 3s");
+            DataSetting.mStartUp = sharedPref.getString(DataSetting.KeyStartUp, "Power 1");
+            DataSetting.timeSearch = sharedPref.getInt(DataSetting.KeytimeSearch, 20);
         }catch (Exception e){
             Log.d("Error cache", ""+e);
         }
@@ -152,12 +245,15 @@ public class MainActivity extends AppCompatActivity {
     public void Save() {
         SharedPreferences mPrefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = mPrefs.edit();
-//        Gson gson = new Gson();
-//        String json = gson.toJson(DataSetting.arraySMSMain);
+        prefsEditor.putInt(DataSetting.KeytimeSearch, DataSetting.timeSearch);
         prefsEditor.putString(DataSetting.KeyAddress, DataSetting.addressConnect);
+        prefsEditor.putString(DataSetting.KeyStartUp, DataSetting.mStartUp);
+        prefsEditor.putString(DataSetting.KeyCoi, DataSetting.mCoi);
+        prefsEditor.putString(DataSetting.KeyPower, DataSetting.mPower);
         prefsEditor.apply();
         Log.d("Save cache SMS", "----------Save cache success");
     }
+
     private void setUp() {
         imgOnOff = findViewById(R.id.imgOnOff);
         imgCoi = findViewById(R.id.imgCoi);
@@ -167,6 +263,12 @@ public class MainActivity extends AppCompatActivity {
         imgSetting = findViewById(R.id.imgSetting);
         imgBT = findViewById(R.id.imgBT);
         imgDisconnectBluetooth = findViewById(R.id.imgDisconnectBluetooth);
+        imgSetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogSetting();
+            }
+        });
         imgCoi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
