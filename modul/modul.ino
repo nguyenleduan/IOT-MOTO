@@ -9,12 +9,13 @@ int state = 0;
 int  pinPower = 4;
 int  pinCoi = 5;
 int  pinStartUp = 6;
-int  pinDen = 7;
-int power = 0;
+int  pinDen = 7; 
 int countConnect = 0;
 unsigned long hientai = 0;
 unsigned long thoigian;
 int timecho = 5000;
+int Time = 0;
+int powerTime =0;
 // Pass 1112
 void setup()
 {
@@ -22,7 +23,7 @@ void setup()
   Serial.println("Enter AT commands:");
   BTSerial.begin(9600);
   button.attachClick(startPower);
-  button.attachLongPressStart(lockPower);
+  button.attachLongPressStart(lockAll);
   pinMode(pinCoi, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinDen, OUTPUT);
@@ -37,14 +38,16 @@ void loop()
   delayMililis();
   button.tick();
   if (BTSerial.available()) {
-    //    Serial.print("\n Data:"); // doc data tu app
-    //     Serial.write(BTSerial.read());
-    int a =  BTSerial.read();
+//    Serial.print("\n Data:");
+//    Serial.print(BTSerial.read()); // doc data tu app
+    //        Serial.print("\n app:");
+    //         Serial.write(BTSerial.read());
+        int a =  BTSerial.read();
     countConnect = 0;
-    checkData(a);
+        checkData(a);
   } else {
     if (countConnect == 60) {
-      lockPower();
+      lockAll();
     }
   }
   if (Serial.available()) { // AT
@@ -62,54 +65,150 @@ void delayMililis() {
       // off all
       Serial.print("\n off all");
     } else {
-      countConnect = countConnect + 1;
+      if (powerTime == 1) {
+          // code long lick 
+      } else {
+        countConnect = countConnect + 1;
+      }
     }
   }
 }
 void checkData(int  data) {
-
   switch (data) {
-    case 49:
-      if (digitalRead(pinPower) == 1) {
-        digitalWrite(pinPower, LOW);
-      } else {
-        digitalWrite(pinPower, HIGH);
-      }
-      Serial.print("\n Power on");
-      break;
-    case 50: // de 2s
-      Serial.print("\n Start up");
-      digitalWrite(pinPower, HIGH);
-      digitalWrite(pinPower, LOW);
-      delay(2000);
-      digitalWrite(pinPower, HIGH);
+    //////////// Coi
+    case 50:
+      Serial.print("\n nhip 1");
+      evenCoi(500);
       break;
     case 51:
-      Serial.print("\n Coi xe");
-      digitalWrite(pinPower, LOW);
-      delay(500);
-      digitalWrite(pinPower, HIGH);
+      Serial.print("\n nhip 2");
+      evenCoi(500);
       break;
+    case 52:
+      Serial.print("\n nhip 3");
+      evenCoi(500);
+      break;
+    case 53:
+      Serial.print("\n Coi 1s");
+      evenCoi(1000);
+      break;
+    case 54:
+      Serial.print("\n Coi 2s");
+      evenCoi(2000);
+      break;
+    case 55:
+      Serial.print("\n Coi 3s");
+      evenCoi(3000);
+      break;
+    case 56:
+      Serial.print("\n Coi 4s");
+      evenCoi(4000);
+      break;
+    case 57:
+      Serial.print("\n Coi 5s");
+      evenCoi(5000);
+      break;
+    ////////////// Đề
+    case 97:
+      Serial.print("\n De 1s");
+      startUp(1000);
+      break;
+    case 98:
+      Serial.print("\n De 2s");
+      startUp(2000);
+      break;
+    case 99:
+      Serial.print("\n De 3s");
+      startUp(3000);
+      break;
+    case 100:
+      Serial.print("\n De 4s");
+      startUp(4000);
+      break;
+    case 101:
+      Serial.print("\n De 5s");
+      startUp(5000);
+      break;
+    case 102:
+      Serial.print("\n De 6s");
+      startUp(6000);
+      break;
+    case 103:
+      Serial.print("\n De 7s");
+      startUp(7000);
+      break;
+    case 104:
+      Serial.print("\n De 8s");
+      startUp(8000);
+      break;
+    ////////////////// power
+    case 105: //// click 
+      Serial.print("\n  Power now");
+         startPower(); 
+      break;
+    case 107: // long click 
+      Serial.print("\n  Power long time");
+      powerTime = 1; 
+         startPower(); 
+      break;
+    //////////////// Screen
+    case 109:
+      Serial.print("\n Chi tim xe");
+      break;
+    case 110:
+      Serial.print("\n tim xe bat nguon");
+      break;
+    case 111:
+      Serial.print("\n tim xe bat nguon de 3s");
+      break;
+    case 112:
+      Serial.print("\n tim xe ");
+      break;
+    //////////////  Connect
     case 120:
       countConnect = 0;
       Serial.print("\n smart phone runing");
       break;
   }
 }
+void startUp(int time) {
+  digitalWrite(pinPower, HIGH);
+  digitalWrite(pinPower, LOW);
+  delay(time);
+  digitalWrite(pinPower, HIGH);
+}
+void evenCoi(int time) {
+  digitalWrite(pinCoi, HIGH);
+  digitalWrite(pinCoi, LOW);
+  delay(time);
+  digitalWrite(pinCoi, HIGH);
+}
 void startPower() {
-  if (countConnect < 10) {
-    if (digitalRead(pinPower) == 1) {
-      digitalWrite(pinPower, LOW);
+  if (powerTime == 1) { 
+      if (digitalRead(pinPower) == HIGH) {
+        digitalWrite(pinPower, LOW);
+      Serial.print("\n POWER ON");
+      } else {
+        digitalWrite(pinPower, HIGH);
+      Serial.print("\n POWER OFF");
+      }
+  } else { 
+    if (countConnect < 10) {
+      if (digitalRead(pinPower) == HIGH) {
+        digitalWrite(pinPower, LOW);
+      Serial.print("\n POWER ON");
+      } else {
+        digitalWrite(pinPower, HIGH);
+      Serial.print("\n POWER OFF");
+      }
     } else {
       digitalWrite(pinPower, HIGH);
+      Serial.print("\n POWER OFF");
     }
-  } else { 
-    digitalWrite(pinPower, HIGH);
   }
-
 }
-void lockPower() {
-  power = 0;
+void lockAll() { 
+  powerTime =0;
   digitalWrite(pinCoi, LOW);
   digitalWrite(pinPower, LOW);
   digitalWrite(pinDen, LOW);

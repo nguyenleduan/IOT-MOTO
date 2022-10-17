@@ -47,11 +47,11 @@ public class Serviced extends Service {
             startMyOwnForeground();
         else
             startForeground(1, new Notification());
+        startTimerCallApi();
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         BroadcastReceiver mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
-        startTimerCallApi();
     }
 
 
@@ -105,10 +105,11 @@ public class Serviced extends Service {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
         manager.createNotificationChannel(chan);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).setContentText("App Motorcycle");
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID) ;
         Notification notification = notificationBuilder.setOngoing(true)
                 .setContentTitle("App is running in background")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("asdasdasd"))
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
@@ -119,33 +120,17 @@ public class Serviced extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        startTimerCallApi();
-        boolean screenOn = intent.getBooleanExtra("screen_state", true);
-        if (!screenOn) {
-            Log.d("1111111111","11111");
-        } else {
-            Log.d("222222222","11111");
-        }
         return START_STICKY;
     }
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stoptimertask();
-
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction("restartservice");
         broadcastIntent.setClass(this, Restarter.class);
-
         this.sendBroadcast(broadcastIntent);
     }
 
-    public void stoptimertask() {
-//        if (timer != null) {
-//            timer.cancel();
-//            timer = null;
-//        }
-    }
 
     @Nullable
     @Override
