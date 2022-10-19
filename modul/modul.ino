@@ -3,7 +3,7 @@
 
 SoftwareSerial BTSerial(2, 3); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (9, true);
+OneButton button (A2, true);
 //#define ledPin 7
 int state = 0;
 int  pinPower = 4;
@@ -16,20 +16,21 @@ unsigned long thoigian;
 int timecho = 5000;
 int Time = 0;
 int powerTime = 0;
-int timeLockAll = 60;
-boolean main;
+int timeLockAll = 30;
+//boolean main;
 // Pass 1112
 void setup()
 {
   Serial.begin(9600);
   Serial.println("Enter AT commands:");
   BTSerial.begin(9600);
-  button.attachClick(startPower);
-  button.attachLongPressStart(lockAll);
+  button.attachClick(onClick);
+  button.attachLongPressStart(longClick);
   pinMode(pinCoi, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinDen, OUTPUT);
   pinMode(pinStartUp, OUTPUT);
+  pinMode(A0, OUTPUT);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
@@ -60,23 +61,30 @@ void delayMililis() {
     hientai = millis();
     Serial.print("\nTime delayy :");
     Serial.print(countConnect);
-    if (countConnect >= timeLockAll) {
+    if (countConnect == timeLockAll) {
       lockAll();
       Serial.print("\n off all");
+        countConnect = countConnect + 1;
     } else {
       if (powerTime == 1) {
         // code long lick
       } else {
+        if(countConnect > timeLockAll+2){
+          
+        }else{
         countConnect = countConnect + 1;
+        }
       }
     }
   }
 }
-void onClick(){
+void onClick() {
   startPower();
+  notification(2);
 }
-void longClick(){
+void longClick() {
   lockAll();
+  notification(6);
 }
 void startUp(int time) {
   digitalWrite(pinStartUp, HIGH);
@@ -115,120 +123,153 @@ void startPower() {
   }
 }
 void lockAll() {
+
+  notification(6);
   powerTime = 0;
-  digitalWrite(pinCoi, LOW);
-  digitalWrite(pinPower, LOW);
-  digitalWrite(pinDen, LOW);
-  digitalWrite(pinStartUp, LOW);
+  digitalWrite(pinCoi, HIGH);
+  digitalWrite(pinPower, HIGH);
+  digitalWrite(pinDen, HIGH);
+  digitalWrite(pinStartUp, HIGH);
 }
 
+void notification(int n) {
+  for (int i = 0; i < n; i++) {
+    digitalWrite(A0, HIGH);
+    delay(200);
+    digitalWrite(A0, LOW);
+    delay(200);
+  }
+}
 void checkData(char  data) {
   switch (data) {
     case '2':
+      notification(2);
       Serial.print("\n nhip 1");
       evenCoi(500);
       break;
     case '3':
+      notification(2);
       Serial.print("\n nhip 2");
-      evenCoi(500); 
+      evenCoi(500);
       evenCoi(500);
       delay(1000);
       evenCoi(500);
-      evenCoi(500); 
+      evenCoi(500);
       break;
     case '4':
+      notification(2);
       Serial.print("\n nhip 3");
-      evenCoi(500);    
-      delay(1000);
       evenCoi(500);
       delay(1000);
       evenCoi(500);
-      evenCoi(500); 
+      delay(1000);
+      evenCoi(500);
+      evenCoi(500);
       break;
     case '5':
+      notification(2);
       Serial.print("\n Coi 1s");
       evenCoi(1000);
       break;
     case '6':
+      notification(2);
       Serial.print("\n Coi 2s");
       evenCoi(2000);
       break;
     case '7':
+      notification(2);
       Serial.print("\n Coi 3s");
       evenCoi(3000);
       break;
     case '8':
+      notification(2);
       Serial.print("\n Coi 4s");
       evenCoi(4000);
       break;
     case '9':
+      notification(2);
       Serial.print("\n Coi 5s");
       evenCoi(5000);
       break;
     ////////////// Đề
     case 'a':
+      notification(2);
       Serial.print("\n De 1s");
       startUp(1000);
       break;
     case 'b':
+      notification(2);
       Serial.print("\n De 2s");
       startUp(2000);
       break;
     case 'c':
+      notification(2);
       Serial.print("\n De 3s");
       startUp(3000);
       break;
     case 'd':
+      notification(2);
       Serial.print("\n De 4s");
       startUp(4000);
       break;
     case 'e':
+      notification(2);
       Serial.print("\n De 5s");
       startUp(5000);
       break;
     case 'f':
+      notification(2);
       Serial.print("\n De 6s");
       startUp(6000);
       break;
     case 'g':
+      notification(2);
       Serial.print("\n De 7s");
       startUp(7000);
       break;
     case 'h':
+      notification(2);
       Serial.print("\n De 8s");
       startUp(8000);
       break;
     ////////////////// power
     case 'i': //// click
+      notification(2);
       Serial.print("\n  Power now");
       startPower();
       break;
     case 'k': // long click
+      notification(4);
       Serial.print("\n  Power long time");
       powerTime = 1;
       startPower();
       break;
     case 'l': // long click
+      notification(2);
       Serial.print("\n  Power 3");
-//      powerTime = 1;
-//      startPower();
+      //      powerTime = 1;
+      //      startPower();
       break;
     //////////////// Screen
     case 'm':
+      notification(2);
       Serial.print("\n Chi tim xe");
       break;
     case 'n':
-      Serial.print("\n tim xe bat nguon");  
-      digitalWrite(pinPower, LOW); 
+      notification(2);
+      Serial.print("\n tim xe bat nguon");
+      digitalWrite(pinPower, LOW);
       break;
     case 'o':
-      Serial.print("\n tim xe bat nguon de 3s"); 
-      digitalWrite(pinPower, LOW); 
+      notification(2);
+      Serial.print("\n tim xe bat nguon de 3s");
+      digitalWrite(pinPower, LOW);
       delay(2000);
       startUp(3000);
       break;
     case 'p':
-      Serial.print("\n tim xe coi 2s ");
+      notification(2);
+      Serial.print("\n tim xe coi 1s ");
       evenCoi(1000);
       break;
     //////////////  Connect
