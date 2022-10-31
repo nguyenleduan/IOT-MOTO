@@ -1,9 +1,5 @@
 package nguyenleduan.app.mymotorcycle;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Dialog;
@@ -32,12 +28,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
-
-import xdroid.toaster.Toaster;
 
 public class MainActivity extends AppCompatActivity {
 

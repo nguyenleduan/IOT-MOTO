@@ -13,12 +13,14 @@ int  pinDen = 7;
 int countConnect = 0;
 unsigned long hientai = 0;
 unsigned long thoigian;
-int timecho = 5000;
+int timecho = 1000;
 int Time = 0;
 int powerTime = 0;
 int timeLockAll = 30;
 //boolean main;
 // Pass 1112
+
+// A4 // đèn button
 void setup()
 {
   Serial.begin(9600);
@@ -31,10 +33,12 @@ void setup()
   pinMode(pinDen, OUTPUT);
   pinMode(pinStartUp, OUTPUT);
   pinMode(A0, OUTPUT);
+  pinMode(A4, OUTPUT);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
   digitalWrite(pinStartUp, HIGH);
+  notification(2);
 }
 void loop()
 {
@@ -45,10 +49,6 @@ void loop()
     Serial.print("\n Data:  ");
     Serial.println(c);
     checkData(c);
-  } else {
-    if (countConnect == timeLockAll) {
-      lockAll();
-    }
   }
   if (Serial.available()) { // AT
     BTSerial.write(Serial.read());
@@ -61,18 +61,29 @@ void delayMililis() {
     hientai = millis();
     Serial.print("\nTime delayy :");
     Serial.print(countConnect);
-    if (countConnect == timeLockAll) {
-      lockAll();
-      Serial.print("\n off all");
-        countConnect = countConnect + 1;
+    if (digitalRead(pinPower) == LOW) {
+      // khi xe dang hoat dongg
     } else {
-      if (powerTime == 1) {
-        // code long lick
-      } else {
-        if(countConnect > timeLockAll+2){
-          
-        }else{
+      if (countConnect == timeLockAll) {
+        lockAll();
+        Serial.print("\n off all");
         countConnect = countConnect + 1;
+      } else {
+        if (countConnect >= timeLockAll - 10 && countConnect <= timeLockAll + 1) {
+          notification(1);
+          digitalWrite(A4, LOW);
+          delay(500);
+          Serial.print("\n Warning off");
+        }
+        if (powerTime == 1) {
+          // code long lick
+        } else {
+          if (countConnect > timeLockAll + 2) {
+            digitalWrite(A4, LOW);
+          } else {
+            countConnect = countConnect + 1;
+            digitalWrite(A4, HIGH);
+          }
         }
       }
     }
@@ -83,6 +94,7 @@ void onClick() {
   notification(2);
 }
 void longClick() {
+  countConnect = timeLockAll - 10;
   lockAll();
   notification(6);
 }
@@ -102,9 +114,11 @@ void startPower() {
   if (powerTime == 1) {
     if (digitalRead(pinPower) == HIGH) {
       digitalWrite(pinPower, LOW);
+      digitalWrite(A4, HIGH);
       Serial.print("\n POWER ON");
     } else {
       digitalWrite(pinPower, HIGH);
+      digitalWrite(A4, LOW);
       Serial.print("\n POWER OFF");
     }
   } else {
@@ -126,6 +140,7 @@ void lockAll() {
 
   notification(6);
   powerTime = 0;
+  digitalWrite(A4, LOW);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
@@ -239,12 +254,18 @@ void checkData(char  data) {
       startPower();
       break;
     case 'k': // long click
-      notification(4);
       Serial.print("\n  Power long time");
-      powerTime = 1;
-      startPower();
+      if (digitalRead(pinPower) == HIGH) {
+        /// lock all
+        lockAll();
+      } else {
+        powerTime = 1;
+        digitalWrite(pinPower, LOW);
+      }
+      //      startPower();
+      notification(4);
       break;
-    case 'l': // long click
+    case 'l':
       notification(2);
       Serial.print("\n  Power 3");
       //      powerTime = 1;
@@ -263,9 +284,11 @@ void checkData(char  data) {
     case 'o':
       notification(2);
       Serial.print("\n tim xe bat nguon de 3s");
-      digitalWrite(pinPower, LOW);
-      delay(2000);
-      startUp(3000);
+      if (digitalRead(pinPower) == HIGH) { 
+        digitalWrite(pinPower, LOW);
+        delay(2000);
+        startUp(1000);
+      }
       break;
     case 'p':
       notification(2);
