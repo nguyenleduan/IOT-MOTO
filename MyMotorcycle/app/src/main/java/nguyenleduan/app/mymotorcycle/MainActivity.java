@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     public static String EXTRA_ADDRESS = "device_address";
     Intent mServiceIntent;
     private Serviced mYourService;
-    ImageView imgDisconnectBluetooth, imgBT, imgSetting, imgSetTime, imgStartUp, imgCoi, imgOnOff;
+    ImageView imgDisconnectBluetooth, imgBT, imgUnLock,imgLock, imgSetting, imgSetTime, imgStartUp, imgCoi, imgOnOff,imgConnect;
     private ProgressDialog progress;
     BluetoothAdapter myBluetoothConnect = null;
     TextView tvAddress, tvStartUp, tvCoi;
@@ -104,16 +104,18 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
     }
 
-    private void sendSignal(String number) {
+    private boolean sendSignal(String number) {
         Log.d("check send data ",number);
         if (DataSetting.btSocket != null) {
             try {
                 DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
-                Toast.makeText(MainActivity.this, "Đã gửi dữ liệu", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "Đã gửi dữ liệu", Toast.LENGTH_SHORT).show();
+                return  true;
             } catch (IOException e) {
                 msg("Error");
             }
         }
+        return  false;
     }
 
     Dialog dialog;
@@ -122,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         Dialog dialogBT = new Dialog(MainActivity.this);
         dialogBT.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogBT.setCancelable(false);
-        int a  =1 ;
         dialogBT.setContentView(R.layout.dialog_bluetooth);
         ImageView imgOK = dialogBT.findViewById(R.id.imgOKST);
         Spinner spList = dialogBT.findViewById(R.id.spList);
@@ -134,10 +135,10 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String info = ((TextView) view).getText().toString();
                 if (info.equals("Chọn Bluetooth")) {
-                        Disconnect();
-                    DataSetting.addressConnect = "";
-                    DataSetting.isConnect = false;
-                    tvAddress.setText("Chưa có kết nối :(");
+//                        Disconnect();
+//                    DataSetting.addressConnect = "";
+//                    DataSetting.isConnect = false;
+//                    tvAddress.setText("Chưa có kết nối :(");
                 } else {
                     DataSetting.addressConnect = info.substring(info.length() - 17);
                     new ConnectBT().execute();
@@ -296,6 +297,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUp() {
         imgOnOff = findViewById(R.id.imgOnOff);
+        imgUnLock = findViewById(R.id.imgUnLock);
+        imgConnect = findViewById(R.id.imgConnect);
         tvStartUp = findViewById(R.id.tvStartUp);
         tvCoi = findViewById(R.id.tvCoi);
         imgCoi = findViewById(R.id.imgCoi);
@@ -304,11 +307,44 @@ public class MainActivity extends AppCompatActivity {
         tvAddress = findViewById(R.id.tvAddress);
         imgSetting = findViewById(R.id.imgSetting);
         imgBT = findViewById(R.id.imgBT);
+        imgLock = findViewById(R.id.imgLock);
         imgDisconnectBluetooth = findViewById(R.id.imgDisconnectBluetooth);
+        imgLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rung(300);
+                if(sendSignal(dataSetting.returnData(DataSetting.mLock))){
+                    Disconnect();
+                }
+            }
+        });
+        imgUnLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                 if(DataSetting.isConnect){
+                     sendSignal("t");
+                     /// un lock
+                 }else{
+                     msg("chưa kết nối");
+                 }
+                rung(300);
+            }
+        });
         imgSetTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dialogChangeDelay();
+            }
+        });
+        imgConnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // reconnect
+                if(DataSetting.addressConnect.isEmpty()){
+                    Toast.makeText(MainActivity.this, "Chưa có địa chỉ bluetooth", Toast.LENGTH_SHORT).show();
+                }else {
+                    new ConnectBT().execute();
+                }
             }
         });
         imgSetting.setOnClickListener(new View.OnClickListener() {
@@ -361,11 +397,9 @@ public class MainActivity extends AppCompatActivity {
         imgDisconnectBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                rung(800);
-                DataSetting.addressConnect = "";
-                DataSetting.isConnect = false;
                 tvAddress.setText("Chưa có kết nối :(");
                 Disconnect();
+                rung(800);
             }
         });
         if (DataSetting.isConnect) {
@@ -378,9 +412,12 @@ public class MainActivity extends AppCompatActivity {
     private void Disconnect() {
         if (DataSetting.btSocket != null) {
             try {
-                tvAddress.setText("Chưa có kết nối");
-                msg("Đã ngắt kết nối !");
-                DataSetting.btSocket.close();
+                if(DataSetting.isConnect){
+                    tvAddress.setText("Chưa có kết nối");
+                    msg("Đã ngắt kết nối !");
+                    DataSetting.isConnect = false;
+                    DataSetting.btSocket.close();
+                }
             } catch (IOException e) {
                 msg("Error");
             }
@@ -432,7 +469,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 ConnectSuccess = false;
             }
-
             return null;
         }
 
@@ -448,6 +484,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 DataSetting.isConnect = true;
                 tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối");
+                sendSignal("x");
                 Save();
             }
             progress.dismiss();

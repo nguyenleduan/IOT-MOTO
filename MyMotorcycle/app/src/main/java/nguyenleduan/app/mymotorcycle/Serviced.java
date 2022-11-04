@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,7 +16,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -59,13 +57,13 @@ public class Serviced extends Service {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-//                Log.i("Count", "---- " + count);
+                Log.i("Count", "---- " + count);
                 if(count == DataSetting.timeSearch){
-                    Toaster.toast("App đang hoạt động...");
+//                    Toaster.toast("App đang hoạt động...");
                     timer.cancel();
                     sendSignal("x");
                     count=0;
-                    startTimerCallApi();
+                    return;
                 }else{
                     count++;
                 }
@@ -74,22 +72,38 @@ public class Serviced extends Service {
         timer.schedule(timerTask, 1000, 1000); //
     }
 
+    public void sendReturn(){
+        try {
+            String number = "x";
+            Log.d("Send data service:","------------Send return ---------");
+            DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
+        }catch (Exception e){
+            DataSetting.isConnect = false;
+        }
+    }
     public void sendSignal ( String number ) {
-        Log.d("Send data service:","---------"+number+"---------");
+        Log.d("Send data service:","---------"+number+"-------c--");
         if ( DataSetting.btSocket != null ) {
             try {
+                Log.d("Send data service:","---------"+number.toString().getBytes()+"-------c--");
                 DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
+                startTimerCallApi();
             } catch (IOException e) {
-                Toaster.toast("Send data error");
                 DataSetting.btSocket = null;
                 DataSetting.isConnect = false;
                 if(!DataSetting.addressConnect.isEmpty()){
                     new ConnectBT().execute();
+                }else{
+                    Log.d("Restart counter:","- =========== Send error=================-------");
+                    startTimerCallApi();
                 }
             }
         }else{
             if(!DataSetting.addressConnect.isEmpty()){
                 new ConnectBT().execute();
+            }else{
+                Log.d("Restart counter:","- =========== address null =================-------");
+                startTimerCallApi();
             }
         }
     }
@@ -174,9 +188,24 @@ public class Serviced extends Service {
         protected void onPostExecute (Void result) {
             super.onPostExecute(result);
             if (!ConnectSuccess) {
-                Toaster.toast("Kết nối thất bại !\n Vui lòng kiểm tra lại");
+                DataSetting.isConnect = false;
+//                Toaster.toast("Kết nối thất bại !\n Vui lòng kiểm tra lại");
+
+                Log.d("Restart counter:","- ============== connect fail ==============-------");
+                Timer timers = new Timer();
+                timerTask = new TimerTask() {
+                    public void run() {
+                        timers.cancel();
+                        new ConnectBT().execute();
+                        Log.d("Restart counter:","- ============== connect fail == reconnect=== "+DataSetting.addressConnect+"=========-------");
+                        return;
+                    }
+                };
+                timers.schedule(timerTask, 1000, 1000);
             } else {
-                Toaster.toast("Đã kết nối....");
+                sendReturn();
+                Log.d("Restart counter:","- ============== connect ok ==============-------");
+                startTimerCallApi();
             }
         }
     }

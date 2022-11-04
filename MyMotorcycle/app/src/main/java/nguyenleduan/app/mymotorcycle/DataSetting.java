@@ -21,6 +21,7 @@ public class DataSetting {
     public static List<String> listCoi = Arrays.asList("Chọn setting","Nhịp 1","Nhịp 2","Nhịp 3","Giữ 1s","Giữ 2s","Giữ 3s","Giữ 4s","Giữ 5s" );
     public static List<String> listStartUp = Arrays.asList("Chọn setting","Đề 1s","Đề 2s","Đề 3s","Đề 4s","Đề 5s","Đề 6s","Đề 7s","Đề 8s");
     public static List<String> listScreen = Arrays.asList("Không sử dụng","Chỉ quét xe","Quét và bật nguồn","Quét và đề 3s","Quét và Còi 1s");
+    public static String mLock = "Lock";
     public static String mCoi = "";
     public static String mStartUp = "";
     public static String mPower = "";
@@ -71,15 +72,20 @@ public class DataSetting {
                 return "l";
                 //////////////
             case  "Chỉ quét xe":
-                return "m"; // 109
+                return "m";
             case  "Quét và bật nguồn":
-                return "n"; // 110
+                return "n";
             case  "Quét và đề 3s":
-                return "o"; // 111
+                return "o";
             case  "Quét và Còi 1s":
-                return "p"; // 112
+                return "p";
             case  "Không sử dụng":
-                return "r"; // 113
+                return "r";
+            //////////////////////////
+            case  "Lock":
+                return "v";
+            case  "Unlock":
+                return "t";
         }
         return "x"; // 120
     }
