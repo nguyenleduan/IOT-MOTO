@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 rung(300);
                 sendSignal(dataSetting.returnData(DataSetting.mCoi));
-                Log.d("SEND DATA Coi", "" + dataSetting.returnData(DataSetting.mCoi));
+//                Log.d("SEND DATA Coi", "" + dataSetting.returnData(DataSetting.mCoi));
             }
         });
         imgStartUp.setOnClickListener(new View.OnClickListener() {
