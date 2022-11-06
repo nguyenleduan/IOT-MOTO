@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="nguyenleduan.app.mymotorcycle">
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -33,6 +34,8 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <service android:name=".SimpleService" />
     </application>
 
 </manifest>

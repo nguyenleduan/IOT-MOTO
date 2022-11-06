@@ -32,6 +32,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.siddharthks.bubbles.FloatingBubblePermissions;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FloatingBubblePermissions.startPermissionRequest(this);
         setUp();
         getCache();
         Window window = this.getWindow();
@@ -89,6 +92,17 @@ public class MainActivity extends AppCompatActivity {
         }
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+        startService(new Intent(getApplicationContext(), SimpleService.class));
+
+    }
+ ////
+    private boolean isSimpleServiceStopped() {
+        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (SimpleService.class.getName().equals(service.service.getClassName()))
+                return false;
+        }
+        return true;
     }
 
     private void rung(long time) {
@@ -343,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                 if(DataSetting.addressConnect.isEmpty()){
                     Toast.makeText(MainActivity.this, "Chưa có địa chỉ bluetooth", Toast.LENGTH_SHORT).show();
                 }else {
-                    new ConnectBT().execute();
+                    bluetoothConnect();
                 }
             }
         });
@@ -442,6 +456,31 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
 
         }
+    }
+
+
+
+    private  void bluetoothConnect(){
+        try {
+            if (DataSetting.btSocket == null || !DataSetting.isConnect) {
+                myBluetoothConnect = BluetoothAdapter.getDefaultAdapter();
+                BluetoothDevice dis = myBluetoothConnect.getRemoteDevice(DataSetting.addressConnect);
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+
+                }
+                DataSetting.btSocket = dis.createInsecureRfcommSocketToServiceRecord(myUUID);
+                BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+                DataSetting.btSocket.connect();
+
+
+                // TODO check connect ok send data
+            }
+        } catch (IOException e) {
+            String a = "2";
+            Log.d("asdas","asdasd");
+//            ConnectSuccess = false;
+        }
+
     }
 
 

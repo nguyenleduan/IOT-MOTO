@@ -28,7 +28,7 @@ public class DataSetting {
     public static String mScreen = "";
 
     public String returnData(String data){
-        Log.d("----------------------returnData",data);
+        Log.d("------------------- Send data Name ",data);
         switch ( data ) {
             case  "Nhịp 1":
                 return "2"; // 50
