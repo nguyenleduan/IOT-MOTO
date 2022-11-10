@@ -16,15 +16,16 @@ public class DataSetting {
     public static  String KeyPower = "KeyPower";
     public static  String KeyScreen = "KeyScreen";
     public static String addressConnect = "";
-    public static int timeSearch = 20;
+    public static int timeSearch = 5;
     public static BluetoothSocket btSocket = null;
     public static List<String> listCoi = Arrays.asList("Chọn setting","Nhịp 1","Nhịp 2","Nhịp 3","Giữ 1s","Giữ 2s","Giữ 3s","Giữ 4s","Giữ 5s" );
     public static List<String> listStartUp = Arrays.asList("Chọn setting","Đề 1s","Đề 2s","Đề 3s","Đề 4s","Đề 5s","Đề 6s","Đề 7s","Đề 8s");
     public static List<String> listScreen = Arrays.asList("Không sử dụng","Chỉ quét xe","Quét và bật nguồn","Quét và đề 3s","Quét và Còi 1s");
+    public static boolean isLock = false;
     public static String mLock = "Lock";
-    public static String mCoi = "";
-    public static String mStartUp = "";
-    public static String mPower = "";
+    public static String mCoi = "Nhịp 1";
+    public static String mStartUp = "Đề 1s";
+    public static String mPower = "Power 1";
     public static String mScreen = "";
 
     public String returnData(String data){

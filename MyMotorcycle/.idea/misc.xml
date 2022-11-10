@@ -14,10 +14,13 @@
         <entry key="..\:/Project/IOT-MOTO/MyMotorcycle/app/src/main/res/mipmap-anydpi-v26/ic_logo_round.xml" value="0.2345" />
         <entry key="..\:/Project/canvas_chart/MyMotorcycle/app/src/main/res/layout/activity_main.xml" value="0.18541666666666667" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.3258864693019701" />
+        <entry key="app/src/main/res/layout/dialog_bluetooth.xml" value="0.20742753623188406" />
         <entry key="app/src/main/res/layout/dialog_set_time.xml" value="0.2717391304347826" />
         <entry key="app/src/main/res/layout/dialog_setting.xml" value="0.2717391304347826" />
         <entry key="app/src/main/res/layout/sample_view.xml" value="0.3832122802734375" />
+        <entry key="bubbles/src/main/res/layout/floating_bubble_view.xml" value="0.2463768115942029" />
         <entry key="bubbles/src/main/res/layout/floating_expandable_view.xml" value="0.24997100830078126" />
+        <entry key="bubbles/src/main/res/layout/floating_remove_bubble_view.xml" value="0.2463768115942029" />
       </map>
     </option>
   </component>
