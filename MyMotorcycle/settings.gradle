@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "My Motorcycle"
-include ':app'
+include ':app', ':bubbles'

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/back_group_custom">
+
+    <ImageView
+        android:id="@+id/imgPowerWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/power"
+        app:layout_constraintEnd_toStartOf="@+id/imgStartUpWindow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Nguồn"
+        app:layout_constraintEnd_toEndOf="@+id/imgPowerWindow"
+        app:layout_constraintStart_toStartOf="@+id/imgPowerWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgPowerWindow" />
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Khởi động"
+        app:layout_constraintEnd_toEndOf="@+id/imgStartUpWindow"
+        app:layout_constraintStart_toStartOf="@+id/imgStartUpWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgStartUpWindow" />
+
+    <TextView
+        android:id="@+id/textView18"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Khoá"
+        app:layout_constraintEnd_toEndOf="@+id/imgLockWindow"
+        app:layout_constraintStart_toStartOf="@+id/imgLockWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgLockWindow" />
+
+    <TextView
+        android:id="@+id/tvStartWindow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/imagStartWindow"
+        app:layout_constraintStart_toStartOf="@+id/imagStartWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imagStartWindow" />
+
+    <TextView
+        android:id="@+id/tvStartWindow2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Mở khoá"
+        app:layout_constraintEnd_toEndOf="@+id/imgUnlockWindow"
+        app:layout_constraintStart_toStartOf="@+id/imgUnlockWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgUnlockWindow" />
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/akaya_telivigala"
+        android:text="Còi"
+        app:layout_constraintEnd_toEndOf="@+id/imgCoiWindow"
+        app:layout_constraintStart_toStartOf="@+id/imgCoiWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgCoiWindow" />
+
+    <ImageView
+        android:id="@+id/imgLockWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/lock"
+        app:layout_constraintEnd_toStartOf="@+id/imgStartUpWindow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgPowerWindow" />
+
+    <ImageView
+        android:id="@+id/imgStartUpWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/startup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imgCoiWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/horn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imgStartUpWindow"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imgUnlockWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/unlock"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imagStartWindow"
+        app:layout_constraintTop_toBottomOf="@+id/imgCoiWindow" />
+
+    <ImageView
+        android:id="@+id/imagStartWindow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgStartUpWindow" />
+</androidx.constraintlayout.widget.ConstraintLayout>

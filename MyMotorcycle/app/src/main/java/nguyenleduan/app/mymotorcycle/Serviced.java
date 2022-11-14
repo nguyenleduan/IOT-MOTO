@@ -4,13 +4,14 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -35,9 +36,9 @@ public class Serviced extends Service {
     TimerTask timerTask;
     public static int count = 1;
     BluetoothAdapter myBluetoothConnect = null;
-
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     BluetoothSocket btSocket = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -45,19 +46,23 @@ public class Serviced extends Service {
             startMyOwnForeground();
         else
             startForeground(1, new Notification());
+        startTimerCallApi();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        BroadcastReceiver mReceiver = new ScreenReceiver();
+        registerReceiver(mReceiver, filter);
     }
-
     public void startTimerCallApi() {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-                Log.i("Count", "=========  " + count);
+                Log.i("Count", "---- " + count);
                 if(count == DataSetting.timeSearch){
-                    Toaster.toast("App đang hoạt động...");
+//                    Toaster.toast("App đang hoạt động...");
                     timer.cancel();
                     sendSignal("x");
                     count=0;
-                    startTimerCallApi();
+                    return;
                 }else{
                     count++;
                 }
@@ -66,20 +71,43 @@ public class Serviced extends Service {
         timer.schedule(timerTask, 1000, 1000); //
     }
 
-    private void sendSignal ( String number ) {
-        Log.d("Send data service:","-----------!!!!!!------------------");
-        if ( DataSetting.btSocket != null ) {
-            try {
-                DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
-                Log.d("Send data service:","11-----------------------------");
-            } catch (IOException e) {
-                Toaster.toast("Send data error");
-                DataSetting.btSocket = null;
-                DataSetting.isConnect = false;
+    public void sendReturn(){
+        try {
+            String number = "x";
+            Log.d("Send data service:","------------Send return ---------");
+            DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
+        }catch (Exception e){
+            DataSetting.isConnect = false;
+        }
+    }
+    public void sendSignal ( String number ) {
+        Log.d("Send data service:","---------"+number+"-------c--");
+        if(!DataSetting.isDisconnect){
+            if ( DataSetting.btSocket != null ) {
+                try {
+                    Log.d("Send data service:","---------"+number.toString().getBytes()+"-------c--");
+                    DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
+                    startTimerCallApi();
+                } catch (IOException e) {
+                    DataSetting.btSocket = null;
+                    DataSetting.isConnect = false;
+                    if(!DataSetting.addressConnect.isEmpty()){
+                        new ConnectBT().execute();
+                    }else{
+                        Log.d("Restart counter:","- =========== Send error=================-------");
+                        startTimerCallApi();
+                    }
+                }
+            }else{
                 if(!DataSetting.addressConnect.isEmpty()){
                     new ConnectBT().execute();
+                }else{
+                    Log.d("Restart counter:","- =========== address null =================-------");
+                    startTimerCallApi();
                 }
             }
+        }else{
+            startTimerCallApi();
         }
     }
 
@@ -94,10 +122,11 @@ public class Serviced extends Service {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
         manager.createNotificationChannel(chan);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).setContentText("App Motorcycle");
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID) ;
         Notification notification = notificationBuilder.setOngoing(true)
                 .setContentTitle("App is running in background")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("asdasdasd"))
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
@@ -108,28 +137,17 @@ public class Serviced extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        startTimerCallApi();
         return START_STICKY;
     }
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stoptimertask();
-
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction("restartservice");
         broadcastIntent.setClass(this, Restarter.class);
         this.sendBroadcast(broadcastIntent);
     }
 
-    public void stoptimertask() {
-//        if (timer != null) {
-//            timer.cancel();
-//            timer = null;
-//        }
-    }
 
     @Nullable
     @Override
@@ -148,6 +166,7 @@ public class Serviced extends Service {
 
         @Override
         protected Void doInBackground(Void... devices) {
+            Log.d("Quet xe","_______________________");
             try {
                 if (DataSetting.btSocket == null || !DataSetting.isConnect  ) {
                     myBluetoothConnect = BluetoothAdapter.getDefaultAdapter();
@@ -172,9 +191,24 @@ public class Serviced extends Service {
         protected void onPostExecute (Void result) {
             super.onPostExecute(result);
             if (!ConnectSuccess) {
-                Toaster.toast("Kết nối thất bại !\n Vui lòng kiểm tra lại");
+                DataSetting.isConnect = false;
+//                Toaster.toast("Kết nối thất bại !\n Vui lòng kiểm tra lại");
+
+                Log.d("Restart counter:","- ============== connect fail ==============-------");
+                Timer timers = new Timer();
+                timerTask = new TimerTask() {
+                    public void run() {
+                        timers.cancel();
+                        new ConnectBT().execute();
+                        Log.d("Restart counter:","- ============== connect fail == reconnect=== "+DataSetting.addressConnect+"=========-------");
+                        return;
+                    }
+                };
+                timers.schedule(timerTask, 500, 500);
             } else {
-                Toaster.toast("Đã kết nối....");
+                sendReturn();
+                Log.d("Restart counter:","- ============== connect ok ==============-------");
+                startTimerCallApi();
             }
         }
     }
