@@ -91,7 +91,7 @@ public class Serviced extends Service {
                 } catch (IOException e) {
                     DataSetting.btSocket = null;
                     DataSetting.isConnect = false;
-                    if(!DataSetting.addressConnect.isEmpty()){
+                    if(DataSetting.addressConnect != null && !DataSetting.addressConnect.isEmpty()){
                         new ConnectBT().execute();
                     }else{
                         Log.d("Restart counter:","- =========== Send error=================-------");
@@ -99,7 +99,7 @@ public class Serviced extends Service {
                     }
                 }
             }else{
-                if(!DataSetting.addressConnect.isEmpty()){
+                if(DataSetting.addressConnect!=null && !DataSetting.addressConnect.isEmpty()){
                     new ConnectBT().execute();
                 }else{
                     Log.d("Restart counter:","- =========== address null =================-------");
@@ -204,7 +204,7 @@ public class Serviced extends Service {
                         return;
                     }
                 };
-                timers.schedule(timerTask, 500, 500);
+                timers.schedule(timerTask, 100, 100);
             } else {
                 sendReturn();
                 Log.d("Restart counter:","- ============== connect ok ==============-------");

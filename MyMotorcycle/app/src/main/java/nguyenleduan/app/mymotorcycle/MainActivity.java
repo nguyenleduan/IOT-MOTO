@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     public static String EXTRA_ADDRESS = "device_address";
     Intent mServiceIntent;
     private Serviced mYourService;
-    ImageView imgDisconnectBluetooth, imgBT, imgUnLock,imgLock, imgSetting, imgSetTime, imgStartUp, imgCoi, imgOnOff,imgConnect;
+    ImageView imgDisconnectBluetooth, imgBT, imgUnLock, imgLock, imgSetting, imgSetTime, imgStartUp, imgCoi, imgOnOff, imgConnect;
     private ProgressDialog progress;
     BluetoothAdapter myBluetoothConnect = null;
     TextView tvAddress, tvStartUp, tvCoi;
@@ -87,15 +87,15 @@ public class MainActivity extends AppCompatActivity {
         }
         pairedDevicesList();
         Log.d("MMMMMM----------Address", DataSetting.addressConnect + " -----????");
-        if (!DataSetting.addressConnect.isEmpty() && DataSetting.btSocket == null) {
+        if (DataSetting.btSocket != null && DataSetting.addressConnect != null && !DataSetting.addressConnect.isEmpty() && DataSetting.isConnect) {
             new ConnectBT().execute();
         }
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
         startService(new Intent(getApplicationContext(), SimpleService.class));
 
     }
- ////
+
+    ////
     private boolean isSimpleServiceStopped() {
         final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -119,17 +119,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean sendSignal(String number) {
-        Log.d("check send data ",number);
+        Log.d("check send data ", number);
         if (DataSetting.btSocket != null) {
             try {
                 DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
 //                Toast.makeText(MainActivity.this, "Đã gửi dữ liệu", Toast.LENGTH_SHORT).show();
-                return  true;
+                return true;
             } catch (IOException e) {
                 msg("Error");
             }
         }
-        return  false;
+        return false;
     }
 
     Dialog dialog;
@@ -191,8 +191,9 @@ public class MainActivity extends AppCompatActivity {
         });
         dialog.show();
     }
+
     void dialogSetting() {
-        Dialog  mDialog = new Dialog(MainActivity.this);
+        Dialog mDialog = new Dialog(MainActivity.this);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.dialog_setting);
         mDialog.setCancelable(true);
@@ -212,8 +213,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!info.equals("Không sử dụng")) {
                     DataSetting.mFunction = info;
                     Log.d("-------mFunction", DataSetting.mFunction + "");
-                }else {
-                    DataSetting.mFunction ="";
+                } else {
+                    DataSetting.mFunction = "";
                 }
             }
 
@@ -278,8 +279,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String info = ((TextView) view).getText().toString();
-                    DataSetting.mScreen = info;
-                    Log.d("-------Csreen", DataSetting.mScreen + "");
+                DataSetting.mScreen = info;
+                Log.d("-------Csreen", DataSetting.mScreen + "");
             }
 
             @Override
@@ -333,10 +334,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Save cache SMS", "----------Save cache success");
     }
 
-    public void setValue(){
-        if(DataSetting.isConnect){
+    public void setValue() {
+        if (DataSetting.isConnect) {
             tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối");
-        }else{
+        } else {
             tvAddress.setText("Mất kết nối");
         }
     }
@@ -359,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 rung(300);
-                if(sendSignal(dataSetting.returnData(DataSetting.mLock))){
+                if (sendSignal(dataSetting.returnData(DataSetting.mLock))) {
                     Disconnect();
                 }
             }
@@ -367,12 +368,12 @@ public class MainActivity extends AppCompatActivity {
         imgUnLock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                 if(DataSetting.isConnect){
-                     sendSignal("t");
-                     /// un lock
-                 }else{
-                     msg("chưa kết nối");
-                 }
+                if (DataSetting.isConnect) {
+                    sendSignal("t");
+                    /// un lock
+                } else {
+                    msg("chưa kết nối");
+                }
                 rung(300);
             }
         });
@@ -387,9 +388,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // reconnect
                 DataSetting.isDisconnect = false;
-                if(DataSetting.addressConnect.isEmpty()){
+                if (DataSetting.addressConnect == null || DataSetting.addressConnect.isEmpty()) {
                     Toast.makeText(MainActivity.this, "Chưa có địa chỉ bluetooth", Toast.LENGTH_SHORT).show();
-                }else {
+                } else {
                     new ConnectBT().cancel(false);
                     new ConnectBT().execute();
                 }
@@ -462,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
     private void Disconnect() {
         if (DataSetting.btSocket != null) {
             try {
-                if(DataSetting.isConnect){
+                if (DataSetting.isConnect) {
                     tvAddress.setText("Chưa có kết nối");
                     msg("Đã ngắt kết nối !");
                     DataSetting.isConnect = false;
@@ -495,8 +496,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    private  void bluetoothConnect(){
+    private void bluetoothConnect() {
         try {
             if (DataSetting.btSocket == null || !DataSetting.isConnect) {
                 myBluetoothConnect = BluetoothAdapter.getDefaultAdapter();
@@ -507,12 +507,12 @@ public class MainActivity extends AppCompatActivity {
                 DataSetting.btSocket = dis.createInsecureRfcommSocketToServiceRecord(myUUID);
                 BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
                 DataSetting.btSocket.connect();
-                Log.d("Bluetooth connect","success");
+                Log.d("Bluetooth connect", "success");
                 // TODO check connect ok send data
             }
         } catch (IOException e) {
             String a = "2";
-            Log.d("asdas","asdasd");
+            Log.d("asdas", "asdasd");
 //            ConnectSuccess = false;
         }
 
@@ -541,8 +541,8 @@ public class MainActivity extends AppCompatActivity {
                     DataSetting.btSocket.connect();
                 }
             } catch (IOException e) {
-                myBluetoothConnect =null;
-                DataSetting.btSocket =null;
+                myBluetoothConnect = null;
+                DataSetting.btSocket = null;
                 ConnectSuccess = false;
             }
             return null;
