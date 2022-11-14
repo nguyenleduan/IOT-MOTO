@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
@@ -24,6 +25,7 @@ import xdroid.toaster.Toaster;
 public class SimpleService extends FloatingBubbleService {
     ImageView imgPowerWindow,imgStartUpWindow,imgCoiWindow,imgLockWindow,imagStartWindow,imgUnlockWindow ;
     DataSetting dataSetting = new DataSetting();
+    TextView tvStartWindow;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent == null)
@@ -68,12 +70,12 @@ public class SimpleService extends FloatingBubbleService {
         FloatingBubbleConfig bubble = new FloatingBubbleConfig.Builder()
                 .bubbleIcon(ContextCompat.getDrawable(context, R.drawable.ic_logo_vuong))
                 .removeBubbleIcon(ContextCompat.getDrawable(context, com.siddharthks.bubbles.R.drawable.close_default_icon))
-                .bubbleIconDp(100)
+                .bubbleIconDp(70)
                 .expandableView(getInflater().inflate(R.layout.sample_view, null))
                 .removeBubbleIconDp(54)
                 .paddingDp(4)
                 .borderRadiusDp(0)
-                .expandableColor(Color.WHITE)
+                .expandableColor(Color.TRANSPARENT)
                 .triangleColor(0xFF215A64)
                 .gravity(Gravity.END)
                 .physicsEnabled(false)
@@ -88,6 +90,8 @@ public class SimpleService extends FloatingBubbleService {
         imgLockWindow = bubble.getExpandableView().findViewById(R.id.imgLockWindow);
         imgCoiWindow = bubble.getExpandableView().findViewById(R.id.imgCoiWindow);
         imgPowerWindow = bubble.getExpandableView().findViewById(R.id.imgPowerWindow);
+        tvStartWindow = bubble.getExpandableView().findViewById(R.id.tvStartWindow);
+        tvStartWindow.setText(DataSetting.mFunction+"");
         imgStartUpWindow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -117,7 +121,7 @@ public class SimpleService extends FloatingBubbleService {
             public void onClick(View view) {
                 checkLock();
                 Log.d("Button imagStartWindow ", "12");
-                sendSignal("o");
+                sendSignal(dataSetting.returnData(DataSetting.mFunction));
 
             }
         });
@@ -133,6 +137,8 @@ public class SimpleService extends FloatingBubbleService {
             @Override
             public void onClick(View view) {
                 DataSetting.isLock = true;
+                DataSetting.isConnect  = false;
+                DataSetting.isDisconnect=true;
                 Log.d("Button imgLockWindow ", "12");
                 sendSignal(dataSetting.returnData(DataSetting.mLock));
             }
@@ -141,6 +147,7 @@ public class SimpleService extends FloatingBubbleService {
             @Override
             public void onClick(View view) {
                 DataSetting.isLock = false;
+                DataSetting.isDisconnect=false;
                 Log.d("Button imgUnlockWindow ", "12");
                 sendSignal("t");
             }

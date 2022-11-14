@@ -38,6 +38,7 @@ public class Serviced extends Service {
     BluetoothAdapter myBluetoothConnect = null;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     BluetoothSocket btSocket = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -51,8 +52,6 @@ public class Serviced extends Service {
         BroadcastReceiver mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
     }
-
-
     public void startTimerCallApi() {
         timer = new Timer();
         timerTask = new TimerTask() {
@@ -83,28 +82,32 @@ public class Serviced extends Service {
     }
     public void sendSignal ( String number ) {
         Log.d("Send data service:","---------"+number+"-------c--");
-        if ( DataSetting.btSocket != null ) {
-            try {
-                Log.d("Send data service:","---------"+number.toString().getBytes()+"-------c--");
-                DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
-                startTimerCallApi();
-            } catch (IOException e) {
-                DataSetting.btSocket = null;
-                DataSetting.isConnect = false;
+        if(!DataSetting.isDisconnect){
+            if ( DataSetting.btSocket != null ) {
+                try {
+                    Log.d("Send data service:","---------"+number.toString().getBytes()+"-------c--");
+                    DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
+                    startTimerCallApi();
+                } catch (IOException e) {
+                    DataSetting.btSocket = null;
+                    DataSetting.isConnect = false;
+                    if(!DataSetting.addressConnect.isEmpty()){
+                        new ConnectBT().execute();
+                    }else{
+                        Log.d("Restart counter:","- =========== Send error=================-------");
+                        startTimerCallApi();
+                    }
+                }
+            }else{
                 if(!DataSetting.addressConnect.isEmpty()){
                     new ConnectBT().execute();
                 }else{
-                    Log.d("Restart counter:","- =========== Send error=================-------");
+                    Log.d("Restart counter:","- =========== address null =================-------");
                     startTimerCallApi();
                 }
             }
         }else{
-            if(!DataSetting.addressConnect.isEmpty()){
-                new ConnectBT().execute();
-            }else{
-                Log.d("Restart counter:","- =========== address null =================-------");
-                startTimerCallApi();
-            }
+            startTimerCallApi();
         }
     }
 
@@ -201,7 +204,7 @@ public class Serviced extends Service {
                         return;
                     }
                 };
-                timers.schedule(timerTask, 1000, 1000);
+                timers.schedule(timerTask, 500, 500);
             } else {
                 sendReturn();
                 Log.d("Restart counter:","- ============== connect ok ==============-------");

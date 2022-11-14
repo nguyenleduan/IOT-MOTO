@@ -15,17 +15,21 @@ public class DataSetting {
     public static  String KeyCoi = "KeyCoi";
     public static  String KeyPower = "KeyPower";
     public static  String KeyScreen = "KeyScreen";
+    public static  String KeyFunction = "KeyFunction";
     public static String addressConnect = "";
     public static int timeSearch = 5;
     public static BluetoothSocket btSocket = null;
     public static List<String> listCoi = Arrays.asList("Chọn setting","Nhịp 1","Nhịp 2","Nhịp 3","Giữ 1s","Giữ 2s","Giữ 3s","Giữ 4s","Giữ 5s" );
     public static List<String> listStartUp = Arrays.asList("Chọn setting","Đề 1s","Đề 2s","Đề 3s","Đề 4s","Đề 5s","Đề 6s","Đề 7s","Đề 8s");
-    public static List<String> listScreen = Arrays.asList("Không sử dụng","Chỉ quét xe","Quét và bật nguồn","Quét và đề 3s","Quét và Còi 1s");
+    public static List<String> listScreen = Arrays.asList("Không sử dụng","Chỉ quét xe","Quét và bật nguồn","Quét và đề 2s","Quét và Còi 1s");
+    public static List<String> listFunction = Arrays.asList("Không sử dụng","Đề xe 1s","Đề xe 2s","Đề xe 3s","Còi nhịp 1","Còi giữa 1s","Còi giữa 2s");
     public static boolean isLock = false;
+    public static boolean isDisconnect = false;
     public static String mLock = "Lock";
     public static String mCoi = "Nhịp 1";
     public static String mStartUp = "Đề 1s";
     public static String mPower = "Power 1";
+    public static String mFunction = "Đề xe 1s";
     public static String mScreen = "";
 
     public String returnData(String data){
@@ -71,12 +75,25 @@ public class DataSetting {
                 return "k"; // 107
             case  "Power 3":
                 return "l";
+                ////////////// window
+            case  "Đề xe 2s":
+                return "o";
+            case  "Đề xe 1s":
+                return "z";
+            case  "Đề xe 3s":
+                return "W";
+            case  "Còi nhịp 1":
+                return "q";
+            case  "Còi giữa 1s":
+                return "y";
+            case  "Còi giữa 2s":
+                return "y";
                 //////////////
             case  "Chỉ quét xe":
                 return "m";
             case  "Quét và bật nguồn":
                 return "n";
-            case  "Quét và đề 3s":
+            case  "Quét và đề 2s":
                 return "o";
             case  "Quét và Còi 1s":
                 return "p";

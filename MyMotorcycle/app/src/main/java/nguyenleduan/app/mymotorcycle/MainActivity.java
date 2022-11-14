@@ -200,6 +200,28 @@ public class MainActivity extends AppCompatActivity {
         Spinner spStartUp = mDialog.findViewById(R.id.spStartUp);
         Spinner spCoi = mDialog.findViewById(R.id.spCoi);
         Spinner spScreen = mDialog.findViewById(R.id.spScreen);
+        Spinner spFunction = mDialog.findViewById(R.id.spFunction);
+        ArrayAdapter adapterFunction = new ArrayAdapter(this, android.R.layout.simple_spinner_item, DataSetting.listFunction);
+        adapterFunction.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
+        spFunction.setAdapter(adapterFunction);
+        spFunction.setSelection(dataSetting.getIndexList(DataSetting.listFunction, DataSetting.mFunction));
+        spFunction.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String info = ((TextView) view).getText().toString();
+                if (!info.equals("Không sử dụng")) {
+                    DataSetting.mFunction = info;
+                    Log.d("-------mFunction", DataSetting.mFunction + "");
+                }else {
+                    DataSetting.mFunction ="";
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, DataSetting.listCoi);
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
         spCoi.setAdapter(adapter);
@@ -281,11 +303,12 @@ public class MainActivity extends AppCompatActivity {
     public void getCache() {
         try {
             SharedPreferences sharedPref = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-            DataSetting.addressConnect = sharedPref.getString(DataSetting.KeyAddress, "");
+            DataSetting.addressConnect = sharedPref.getString(DataSetting.KeyAddress, null);
             DataSetting.mCoi = sharedPref.getString(DataSetting.KeyCoi, "Nhịp 1");
-            DataSetting.mPower = sharedPref.getString(DataSetting.KeyPower, "Start 3s");
-            DataSetting.mStartUp = sharedPref.getString(DataSetting.KeyStartUp, "Power 1");
-            DataSetting.mScreen = sharedPref.getString(DataSetting.KeyScreen, "Chỉ quét xe");
+            DataSetting.mPower = sharedPref.getString(DataSetting.KeyPower, "Power 1");
+            DataSetting.mStartUp = sharedPref.getString(DataSetting.KeyStartUp, "Đề 1s");
+            DataSetting.mScreen = sharedPref.getString(DataSetting.KeyScreen, "Không sử dụng");
+            DataSetting.mFunction = sharedPref.getString(DataSetting.KeyFunction, "Đề xe 2s");
             DataSetting.timeSearch = sharedPref.getInt(DataSetting.KeytimeSearch, 20);
 
             tvStartUp.setText(DataSetting.mStartUp + "");
@@ -305,8 +328,17 @@ public class MainActivity extends AppCompatActivity {
         prefsEditor.putString(DataSetting.KeyCoi, DataSetting.mCoi);
         prefsEditor.putString(DataSetting.KeyPower, DataSetting.mPower);
         prefsEditor.putString(DataSetting.KeyScreen, DataSetting.mScreen);
+        prefsEditor.putString(DataSetting.KeyFunction, DataSetting.mFunction);
         prefsEditor.apply();
         Log.d("Save cache SMS", "----------Save cache success");
+    }
+
+    public void setValue(){
+        if(DataSetting.isConnect){
+            tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối");
+        }else{
+            tvAddress.setText("Mất kết nối");
+        }
     }
 
     private void setUp() {
@@ -354,10 +386,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // reconnect
+                DataSetting.isDisconnect = false;
                 if(DataSetting.addressConnect.isEmpty()){
                     Toast.makeText(MainActivity.this, "Chưa có địa chỉ bluetooth", Toast.LENGTH_SHORT).show();
                 }else {
-                    bluetoothConnect();
+                    new ConnectBT().cancel(false);
+                    new ConnectBT().execute();
                 }
             }
         });
@@ -411,6 +445,8 @@ public class MainActivity extends AppCompatActivity {
         imgDisconnectBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                DataSetting.isConnect = false;
+                DataSetting.isDisconnect = true;
                 tvAddress.setText("Chưa có kết nối :(");
                 Disconnect();
                 rung(800);
@@ -471,8 +507,7 @@ public class MainActivity extends AppCompatActivity {
                 DataSetting.btSocket = dis.createInsecureRfcommSocketToServiceRecord(myUUID);
                 BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
                 DataSetting.btSocket.connect();
-
-
+                Log.d("Bluetooth connect","success");
                 // TODO check connect ok send data
             }
         } catch (IOException e) {
@@ -506,6 +541,8 @@ public class MainActivity extends AppCompatActivity {
                     DataSetting.btSocket.connect();
                 }
             } catch (IOException e) {
+                myBluetoothConnect =null;
+                DataSetting.btSocket =null;
                 ConnectSuccess = false;
             }
             return null;
