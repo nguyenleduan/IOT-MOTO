@@ -1,6 +1,7 @@
 package nguyenleduan.app.mymotorcycle;
 
 import android.bluetooth.BluetoothSocket;
+import android.os.Vibrator;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -19,6 +20,7 @@ public class DataSetting {
     public static String addressConnect = "";
     public static int timeSearch = 5;
     public static BluetoothSocket btSocket = null;
+    public static Vibrator mVibrator;
     public static List<String> listCoi = Arrays.asList("Chọn setting","Nhịp 1","Nhịp 2","Nhịp 3","Giữ 1s","Giữ 2s","Giữ 3s","Giữ 4s","Giữ 5s" );
     public static List<String> listStartUp = Arrays.asList("Chọn setting","Đề 1s","Đề 2s","Đề 3s","Đề 4s","Đề 5s","Đề 6s","Đề 7s","Đề 8s");
     public static List<String> listScreen = Arrays.asList("Không sử dụng","Chỉ quét xe","Quét và bật nguồn","Quét và đề 2s","Quét và Còi 1s");

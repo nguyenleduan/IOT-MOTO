@@ -37,6 +37,8 @@ import com.siddharthks.bubbles.FloatingBubblePermissions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -58,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     static final String MY_PREFS_NAME = "MyPrefsFile";
     Vibrator v;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
         if (DataSetting.btSocket != null && DataSetting.addressConnect != null && !DataSetting.addressConnect.isEmpty() && DataSetting.isConnect) {
             new ConnectBT().execute();
         }
+        DataSetting.mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         startService(new Intent(getApplicationContext(), SimpleService.class));
-
     }
 
     ////
@@ -458,6 +459,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvAddress.setText("Chưa có kết nối");
         }
+
     }
 
     private void Disconnect() {

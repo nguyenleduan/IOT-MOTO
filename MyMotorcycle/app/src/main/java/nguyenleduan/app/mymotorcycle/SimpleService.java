@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -26,6 +27,22 @@ public class SimpleService extends FloatingBubbleService {
     ImageView imgPowerWindow,imgStartUpWindow,imgCoiWindow,imgLockWindow,imagStartWindow,imgUnlockWindow ;
     DataSetting dataSetting = new DataSetting();
     TextView tvStartWindow;
+
+
+    private void rung() {
+        long time = 500;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                DataSetting.mVibrator.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                DataSetting.mVibrator.vibrate(time);
+            }
+        }catch (Exception e){
+
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent == null)
@@ -98,6 +115,7 @@ public class SimpleService extends FloatingBubbleService {
                 checkLock();
                 Log.d("Button imgStartUpWindow ", "12");
                 sendSignal(dataSetting.returnData(DataSetting.mStartUp));
+                rung();
             }
         });
         imgPowerWindow.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +124,7 @@ public class SimpleService extends FloatingBubbleService {
                 checkLock();
                 Log.d("Button imgPowerWindow ", "12");
                 sendSignal(dataSetting.returnData("Power 1"));
+                rung();
             }
         });
         imgPowerWindow.setOnLongClickListener(new View.OnLongClickListener() {
@@ -113,6 +132,7 @@ public class SimpleService extends FloatingBubbleService {
             public boolean onLongClick(View v) {
                 checkLock();
                 sendSignal("k");
+                rung();
                 return true;
             }
         });
@@ -122,6 +142,7 @@ public class SimpleService extends FloatingBubbleService {
                 checkLock();
                 Log.d("Button imagStartWindow ", "12");
                 sendSignal(dataSetting.returnData(DataSetting.mFunction));
+                rung();
 
             }
         });
@@ -131,6 +152,7 @@ public class SimpleService extends FloatingBubbleService {
                 checkLock();
                 Log.d("Button imgCoiWindow ", "12");
                 sendSignal(dataSetting.returnData(DataSetting.mCoi));
+                rung();
             }
         });
         imgLockWindow.setOnClickListener(new View.OnClickListener() {
@@ -141,6 +163,7 @@ public class SimpleService extends FloatingBubbleService {
                 DataSetting.isDisconnect=true;
                 Log.d("Button imgLockWindow ", "12");
                 sendSignal(dataSetting.returnData(DataSetting.mLock));
+                rung();
             }
         });
         imgUnlockWindow.setOnClickListener(new View.OnClickListener() {
@@ -150,6 +173,7 @@ public class SimpleService extends FloatingBubbleService {
                 DataSetting.isDisconnect=false;
                 Log.d("Button imgUnlockWindow ", "12");
                 sendSignal("t");
+                rung();
             }
         });
         return bubble;
@@ -161,7 +185,6 @@ public class SimpleService extends FloatingBubbleService {
                 Log.d("Send data service:","---------"+number.toString().getBytes()+"---------");
                 DataSetting.btSocket.getOutputStream().write(number.toString().getBytes());
             } catch (IOException e) {
-
                 Log.d("Send data Error:","---------"+number.toString().getBytes()+"---------");
             }
         }
