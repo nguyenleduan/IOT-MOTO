@@ -206,6 +206,7 @@ public class Serviced extends Service {
                 };
                 timers.schedule(timerTask, 100, 100);
             } else {
+                DataSetting.isConnect = true;
                 sendReturn();
                 Log.d("Restart counter:","- ============== connect ok ==============-------");
                 startTimerCallApi();

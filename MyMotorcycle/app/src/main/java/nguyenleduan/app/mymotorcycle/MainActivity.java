@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     static final String MY_PREFS_NAME = "MyPrefsFile";
     Vibrator v;
-    @Override
+    @Override   
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -88,8 +88,10 @@ public class MainActivity extends AppCompatActivity {
         }
         pairedDevicesList();
         Log.d("MMMMMM----------Address", DataSetting.addressConnect + " -----????");
-        if (DataSetting.btSocket != null && DataSetting.addressConnect != null && !DataSetting.addressConnect.isEmpty() && DataSetting.isConnect) {
+        if (DataSetting.btSocket == null && DataSetting.addressConnect != null && !DataSetting.addressConnect.isEmpty() && !DataSetting.isConnect) {
             new ConnectBT().execute();
+        }else{
+            tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối :(");
         }
         DataSetting.mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -361,9 +363,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 rung(300);
-                if (sendSignal(dataSetting.returnData(DataSetting.mLock))) {
-                    Disconnect();
-                }
+                sendSignal(dataSetting.returnData(DataSetting.mLock));
             }
         });
         imgUnLock.setOnClickListener(new View.OnClickListener() {
@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         if (DataSetting.isConnect) {
-            tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối :(");
+            tvAddress.setText(DataSetting.addressConnect + "\n" + "Đã kết nối :)");
         } else {
             tvAddress.setText("Chưa có kết nối");
         }
