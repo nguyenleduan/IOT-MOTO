@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
 #include <OneButton.h>
 
-SoftwareSerial BTSerial(2, 3); // RX | TX  --->TX  | RX (HC-05)
+SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (A2, true);
+OneButton button (12, true);
 //#define ledPin 7
 int state = 0;
 int  pinPower = 4;
@@ -30,6 +30,7 @@ void setup()
   button.attachClick(onClick);
   button.attachLongPressStart(longClick);
   button.attachDoubleClick(doubleLick);
+  button.attachLongPressStop(asdasd);
   pinMode(pinCoi, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinDen, OUTPUT);
@@ -38,9 +39,12 @@ void setup()
   pinMode(A4, OUTPUT);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
-  digitalWrite(pinDen, HIGH);
+  digitalWrite(pinDen, HIGH); 
   digitalWrite(pinStartUp, HIGH);
   notification(3);
+}
+void asdasd() {
+  Serial.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 }
 void loop()
 {
@@ -102,12 +106,14 @@ void onClick() {
   }
 }
 void longClick() {
-  if (lock != 1) {
-    lock = 1;
-    countConnect = timeLockAll + 3;
-    lockAll();
-    notification(4);
-  }
+
+  Serial.println("\n LongClick");
+  //  if (lock != 1) {
+  //    lock = 1;
+  //    countConnect = timeLockAll + 3;
+  //    lockAll();
+  //    notification(4);
+  //  }
 }
 void doubleLick() {
   if (lock != 1) {
@@ -170,12 +176,12 @@ void lockAll() {
 }
 
 void notification(int n) {
-  for (int i = 0; i < n; i++) {
-    digitalWrite(A0, HIGH);
-    delay(200);
-    digitalWrite(A0, LOW);
-    delay(200);
-  }
+  //  for (int i = 0; i < n; i++) {
+  //    digitalWrite(A0, HIGH);
+  //    delay(200);
+  //    digitalWrite(A0, LOW);
+  //    delay(200);
+  //  }
 }
 void checkData(char  data) {
   switch (data) {
