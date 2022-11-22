@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
 #include <OneButton.h>
 
-SoftwareSerial BTSerial(2, 3); // RX | TX  --->TX  | RX (HC-05)
+SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (A2, true);
+OneButton button (12, true); //A2
 //#define ledPin 7
 int state = 0;
 int  pinPower = 4;
@@ -18,18 +18,21 @@ int Time = 0;
 int powerTime = 0;
 int timeLockAll = 30;
 int lock = 0;
+int guard = 0;
 //boolean main;
 // Pass 1112
 
 // A4 // đèn button
 void setup()
 {
+
   Serial.begin(9600);
   Serial.println("Enter AT commands:");
   BTSerial.begin(9600);
   button.attachClick(onClick);
   button.attachLongPressStart(longClick);
   button.attachDoubleClick(doubleLick);
+  button.attachMultiClick(attachMultiClicks);
   pinMode(pinCoi, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinDen, OUTPUT);
@@ -54,6 +57,14 @@ void loop()
   }
   if (Serial.available()) { // AT
     BTSerial.write(Serial.read());
+  }
+}
+void attachMultiClicks() {
+  Serial.println("lock 1");
+  if (lock != 1) {
+    countConnect = timeLockAll - 5;
+    lockAll();
+    notification(6);
   }
 }
 void delayMililis() {
@@ -110,11 +121,11 @@ void longClick() {
   }
 }
 void doubleLick() {
-  if (lock != 1) {
-    countConnect = timeLockAll - 5;
-    lockAll();
-    notification(6);
-  }
+  Serial.println("\non power start");
+  startPower();
+  delay(500);
+  startUp(1000);
+  notification(2);
 }
 void startUp(int time) {
   if (lock != 1) {
@@ -159,7 +170,6 @@ void startPower() {
   }
 }
 void lockAll() {
-
   powerTime = 0;
   digitalWrite(A4, LOW);
   digitalWrite(pinCoi, HIGH);
@@ -309,6 +319,12 @@ void checkData(char  data) {
       notification(2);
       Serial.print("\n tim xe coi 1s ");
       evenCoi(1000);
+      break;
+    /// bảo vệ 
+    case 'w':
+      Serial.println("\n Bật bảo vệ");
+      notification(4);
+      guard = 1;
       break;
     //////////////  Connect
     case 'x':
