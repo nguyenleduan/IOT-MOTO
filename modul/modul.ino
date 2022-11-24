@@ -3,7 +3,8 @@
 
 SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (12, true); //A2
+OneButton button (9, true); //A2
+OneButton buttonRF1 (12, false); // Khóa
 //#define ledPin 7
 int state = 0;
 int  pinPower = 4;
@@ -19,13 +20,13 @@ int powerTime = 0;
 int timeLockAll = 30;
 int lock = 0;
 int guard = 0;
-//boolean main;
+boolean guardMotor = false;
+boolean statusMotor = false;
 // Pass 1112
 
 // A4 // đèn button
 void setup()
 {
-
   Serial.begin(9600);
   Serial.println("Enter AT commands:");
   BTSerial.begin(9600);
@@ -33,6 +34,11 @@ void setup()
   button.attachLongPressStart(longClick);
   button.attachDoubleClick(doubleLick);
   button.attachMultiClick(attachMultiClicks);
+  /// button RF 1
+  buttonRF1.attachClick(onClickRF2) ;
+  buttonRF1.attachLongPressStart(longClickRF2);
+  buttonRF1.attachMultiClick(attachMultiClicksRF2);
+
   pinMode(pinCoi, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinDen, OUTPUT);
@@ -48,7 +54,7 @@ void setup()
 void loop()
 {
   delayMililis();
-  button.tick();
+  buttonRF1.tick();
   if (BTSerial.available()) {
     char c = BTSerial.read();
     Serial.print("\n Data:  ");
@@ -67,14 +73,61 @@ void attachMultiClicks() {
     notification(6);
   }
 }
+// action RF 1
+void onClickRF1() {
+  if (statusMotor) {
+    Serial.println("\nStatus false");
+    statusMotor = false;
+  } else {
+    statusMotor = true;
+    Serial.println("\nStatus true ");
+  }
+}
+void longClickRF1() {
+  Serial.print("\nMở chức năng");
+  lockAll();
+  chongtrom();
+}
+void chongtrom(){
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+}
+
+// action RF 2
+void onClickRF2() {
+  if (digitalRead(pinPower) == HIGH) {
+    digitalWrite(pinPower, LOW);
+    digitalWrite(A4, HIGH);
+    Serial.print("\nPOWER ON");
+    countConnect = 0;
+  } else {
+    digitalWrite(pinPower, HIGH);
+    digitalWrite(A4, LOW);
+    Serial.print("\nPOWER OFF");
+  }
+}
+void longClickRF2() {
+  Serial.print("\nMở chức năng");
+  powerTime = 0;
+  guardMotor = false;
+}
+void attachMultiClicksRF2() {
+  if (powerTime == 0) {
+    Serial.print("\nBật cho mượng");
+    powerTime = 1;
+  } else {
+    Serial.print("\nTắt cho mượng");
+    powerTime = 0;
+  }
+}
 void delayMililis() {
   thoigian = millis();
   if (thoigian - hientai >= timecho) {
     hientai = millis();
     Serial.print("\nTime delayy :");
     Serial.print(countConnect);
-    if (digitalRead(pinPower) == LOW) {
+    if (digitalRead(pinPower) == LOW || statusMotor) {
       // khi xe dang hoat dongg
+      // mỏ trang thái
     } else {
       if (lock != 1) {
         if (countConnect == timeLockAll) {
@@ -169,23 +222,25 @@ void startPower() {
     }
   }
 }
-void lockAll() {
+void lockAll() { 
+  Serial.print("\nLock ALL");
   powerTime = 0;
   digitalWrite(A4, LOW);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
   digitalWrite(pinStartUp, HIGH);
+  statusMotor = false;
   notification(6);
 }
 
 void notification(int n) {
-  for (int i = 0; i < n; i++) {
-    digitalWrite(A0, HIGH);
-    delay(200);
-    digitalWrite(A0, LOW);
-    delay(200);
-  }
+  //  for (int i = 0; i < n; i++) {
+  //    digitalWrite(A0, HIGH);
+  //    delay(200);
+  //    digitalWrite(A0, LOW);
+  //    delay(200);
+  //  }
 }
 void checkData(char  data) {
   switch (data) {
@@ -320,7 +375,7 @@ void checkData(char  data) {
       Serial.print("\n tim xe coi 1s ");
       evenCoi(1000);
       break;
-    /// bảo vệ 
+    /// bảo vệ
     case 'w':
       Serial.println("\n Bật bảo vệ");
       notification(4);
