@@ -4,8 +4,8 @@
 SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
 OneButton button (9, true); //A2
-OneButton buttonRF1 (12, false); // Khóa
-//#define ledPin 7
+OneButton buttonRF1 (11, false); // Khóa
+#define PinConnectBluetooth 12
 int state = 0;
 int  pinPower = 4;
 int  pinCoi = 5;
@@ -45,6 +45,7 @@ void setup()
   pinMode(pinStartUp, OUTPUT);
   pinMode(A0, OUTPUT);
   pinMode(A4, OUTPUT);
+  pinMode(PinConnectBluetooth, INPUT);
   digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
@@ -53,6 +54,7 @@ void setup()
 }
 void loop()
 {
+ 
   delayMililis();
   buttonRF1.tick();
   if (BTSerial.available()) {
@@ -88,8 +90,8 @@ void longClickRF1() {
   lockAll();
   chongtrom();
 }
-void chongtrom(){
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+void chongtrom() {
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 // action RF 2
@@ -123,12 +125,15 @@ void delayMililis() {
   thoigian = millis();
   if (thoigian - hientai >= timecho) {
     hientai = millis();
-    Serial.print("\nTime delayy :");
-    Serial.print(countConnect);
-    if (digitalRead(pinPower) == LOW || statusMotor) {
+    if (digitalRead(pinPower) == LOW || statusMotor || digitalRead(PinConnectBluetooth) == HIGH) {
+
+      Serial.print("\n----- Connected --------");
       // khi xe dang hoat dongg
       // mỏ trang thái
     } else {
+      
+    Serial.print("\nTime delayy :");
+    Serial.print(countConnect);
       if (lock != 1) {
         if (countConnect == timeLockAll) {
           lockAll();
@@ -222,7 +227,7 @@ void startPower() {
     }
   }
 }
-void lockAll() { 
+void lockAll() {
   Serial.print("\nLock ALL");
   powerTime = 0;
   digitalWrite(A4, LOW);
