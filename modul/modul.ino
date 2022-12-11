@@ -3,13 +3,23 @@
 
 SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (9, true); //A2
-OneButton buttonRF1 (11, false); // Khóa
-#define PinConnectBluetooth 12
+OneButton button (9, true); // vàng
+OneButton buttonYenXe (11, true); // vàng
+OneButton buttonRF1 (8, false); // pin rf 1 | 1 remote
+OneButton buttonRF2 (6, false); // pin rf 3 | 2 remote
+//OneButton buttonRF3 (8, false); // pin rf 4 | 3 remote
+//OneButton buttonRF4 (9 , false); // pin rf 2 | 4 remote
+#define PinConnectBluetooth 4
+#define PinGuard 10
+#define PinLedButton A4 // xanh lá
+#define PinCoi A5
+#define PinOutYen 12
+int countGuard = 0;
+int countNotGuard = 0;
 int state = 0;
-int  pinPower = 4;
-int  pinCoi = 5;
-int  pinStartUp = 6;
+int  pinPower = A1;
+int  pinHaza = A2;
+int  pinStartUp = A3;
 int  pinDen = 7;
 int countConnect = 0;
 unsigned long hientai = 0;
@@ -34,29 +44,60 @@ void setup()
   button.attachLongPressStart(longClick);
   button.attachDoubleClick(doubleLick);
   button.attachMultiClick(attachMultiClicks);
-  /// button RF 1
-  buttonRF1.attachClick(onClickRF2) ;
-  buttonRF1.attachLongPressStart(longClickRF2);
-  buttonRF1.attachMultiClick(attachMultiClicksRF2);
+  /////////////////////Yen xe /////////
+  buttonYenXe.attachClick(OnClickYenxe);
 
-  pinMode(pinCoi, OUTPUT);
+  buttonYenXe.attachLongPressStart(OnLongClickYenXe);
+
+  //  buttonYenXe.attachDoubleClick(doubleLick);
+
+
+  //  buttonYenXe.attachMultiClick(attachMultiClicks);
+  /// button remote 1
+  buttonRF1.attachClick(onClickRF1) ; // bật tắt nguồn
+  buttonRF1.attachLongPressStart(longClickRF1); // bật máy đề xe
+  /// button remote 2
+  buttonRF2.attachClick(onClickRF2) ;  // bật tắt trạng thái
+  buttonRF2.attachLongPressStart(longClickRF2); // bật tắt chống trộm
+
+  pinMode(PinOutYen, OUTPUT);
+  pinMode(pinHaza, OUTPUT);
   pinMode(pinPower, OUTPUT);
-  pinMode(pinDen, OUTPUT);
   pinMode(pinStartUp, OUTPUT);
+  pinMode(pinDen, OUTPUT);
+  pinMode(PinGuard, INPUT);
+  pinMode(PinCoi, OUTPUT);
   pinMode(A0, OUTPUT);
-  pinMode(A4, OUTPUT);
+  pinMode(PinLedButton, OUTPUT);
   pinMode(PinConnectBluetooth, INPUT);
-  digitalWrite(pinCoi, HIGH);
+  digitalWrite(PinOutYen, LOW);
+  digitalWrite(pinHaza, HIGH);
   digitalWrite(pinPower, HIGH);
-  digitalWrite(pinDen, HIGH);
   digitalWrite(pinStartUp, HIGH);
-  notification(3);
+  digitalWrite(pinDen, HIGH);
+  //  digitalWrite(PinCoi, HIGH);
+  notification(3, 400);
 }
 void loop()
 {
- 
-  delayMililis();
+
+  //  Serial.println(digitalRead(PinOutYen));
+  //
+  //  digitalWrite(PinOutYen, LOW);
+  //  delay(5000);
+  //  Serial.println(digitalRead(PinOutYen));
+  //  digitalWrite(PinOutYen, HIGH);
+
+  //  delay(5000);
+
+  if (guardMotor) {
+    chongtrom();
+  }
+  buttonYenXe.tick();
+  button.tick();
   buttonRF1.tick();
+  buttonRF2.tick();
+  delayMililis();
   if (BTSerial.available()) {
     char c = BTSerial.read();
     Serial.print("\n Data:  ");
@@ -67,84 +108,189 @@ void loop()
     BTSerial.write(Serial.read());
   }
 }
+void haza(int index) {
+  for (int i = 0; i < index; i++) {
+    digitalWrite(pinHaza, LOW);
+    delay(500);
+    digitalWrite(pinHaza, HIGH);
+    delay(500);
+  }
+}
 void attachMultiClicks() {
   Serial.println("lock 1");
   if (lock != 1) {
     countConnect = timeLockAll - 5;
     lockAll();
-    notification(6);
+    notification(2, 500);
   }
 }
-// action RF 1
+//////////////////////////////////////////////////////////// Yên xe
+void OnClickYenxe() {
+  Serial.println("Mở yên");
+  digitalWrite(PinOutYen, HIGH);
+  delay(1000);
+  digitalWrite(PinOutYen, LOW);
+}
+
+void OnLongClickYenXe() {
+  if (digitalRead(pinHaza) == LOW) {
+    digitalWrite(pinHaza, HIGH);
+  } else {
+    digitalWrite(pinHaza, LOW);
+  }
+
+
+}
+
+//////////////////////////////////////////////////////////// action RF 1
 void onClickRF1() {
+  if (digitalRead(pinPower) == HIGH) {
+    statusMotor = true;
+    digitalWrite(pinPower, LOW);
+    digitalWrite(A4, HIGH);
+    Serial.print("\nPOWER ON");
+    countConnect = 0;
+    delay(1000);
+    haza(1);
+  } else {
+    haza(1);
+    delay(500);
+    digitalWrite(pinPower, HIGH);
+    digitalWrite(A4, LOW);
+    Serial.print("\nPOWER OFF");
+    statusMotor = false;
+  }
+}
+void longClickRF1() {
+  digitalWrite(pinPower, LOW);
+  Serial.print("\n POWER ON");
+  delay(1500);
+  Serial.print("\n đề xe");
+  powerTime = 0;
+  guardMotor = false;
+  digitalWrite(pinStartUp, LOW);
+  delay(1500); ///////////////////////// thời gian đề xe
+  digitalWrite(pinStartUp, HIGH);
+}
+//////////////////////////////////////////////////////////// action RF 2
+void onClickRF2() {
   if (statusMotor) {
     Serial.println("\nStatus false");
     statusMotor = false;
+
   } else {
     statusMotor = true;
     Serial.println("\nStatus true ");
   }
 }
-void longClickRF1() {
-  Serial.print("\nMở chức năng");
-  lockAll();
-  chongtrom();
+void longClickRF2() {
+  if (guardMotor) {
+    guardMotor = false;
+    Serial.println("Tắt chống trộm");
+    haza(1);
+  } else {
+    guardMotor = true;
+    Serial.println("Bất chống trộm");
+    // notification
+    lockAll();
+    haza(2);
+  }
 }
-void chongtrom() {
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////// Button
+void onClick() {
+  Serial.println("\nButton click");
+  if (countConnect <= timeLockAll && lock == 0 ) {
+    startPower();
+  } else if (powerTime == 1) {
+    startPower();
+  }
+  notification(2, 500);
+}
+void longClick() {
+  //  if (lock != 1) {
+  //    lock = 1;
+  countConnect = timeLockAll + 3;
+  lockAll();
+  //    guardMotor = true;
+  notification(4, 400);
+  //  }
+}
+void doubleLick() { /// bật nguồn đề
+  if (digitalRead(pinPower) == HIGH) {
+    startPower();
+    Serial.println("Bật nguồn");
+    notification(2, 400);
+    startUp(1500);
+    Serial.println("Đề máy");
+  } else {
+    startPower();
+  }
 }
 
-// action RF 2
-void onClickRF2() {
-  if (digitalRead(pinPower) == HIGH) {
-    digitalWrite(pinPower, LOW);
-    digitalWrite(A4, HIGH);
-    Serial.print("\nPOWER ON");
-    countConnect = 0;
-  } else {
-    digitalWrite(pinPower, HIGH);
-    digitalWrite(A4, LOW);
-    Serial.print("\nPOWER OFF");
+void notiHaza(int n, int time) {
+  for (int i = 0; i < n; i++) {
+    digitalWrite(pinHaza, LOW);
+    delay(500);
+    digitalWrite(pinHaza, HIGH);
+    delay(500);
+    notification(1, time);
   }
 }
-void longClickRF2() {
-  Serial.print("\nMở chức năng");
-  powerTime = 0;
-  guardMotor = false;
-}
-void attachMultiClicksRF2() {
-  if (powerTime == 0) {
-    Serial.print("\nBật cho mượng");
-    powerTime = 1;
+
+void chongtrom() {
+  if (digitalRead(PinGuard) == LOW) {
+    countGuard ++;
+    if (countGuard == 1) {
+      Serial.print("\n----- countGuard - 1 --------");
+      notiHaza(2, 400);
+      delay(1000);
+    }
+    if (countGuard == 2) {
+      Serial.print("\n----- countGuard - 2 --------");
+      notiHaza(3, 400);
+      delay(1000);
+    }
+    if (countGuard >= 3) {
+      Serial.print("\n----- countGuard - 3 --------");
+      notiHaza(1, 10000);
+      delay(1000);
+      countGuard = 0;
+    }
   } else {
-    Serial.print("\nTắt cho mượng");
-    powerTime = 0;
+    countNotGuard ++;
+    if (countNotGuard >= 200) {
+      Serial.print("\n----- countGuard - 0 --------");
+      countNotGuard = 0;
+    }
   }
+
+
 }
+
 void delayMililis() {
   thoigian = millis();
   if (thoigian - hientai >= timecho) {
     hientai = millis();
     if (digitalRead(pinPower) == LOW || statusMotor || digitalRead(PinConnectBluetooth) == HIGH) {
 
-      Serial.print("\n----- Connected --------");
+      //      Serial.print("\n----- Connected --------");
       // khi xe dang hoat dongg
       // mỏ trang thái
+
+      digitalWrite(A4, HIGH);
     } else {
-      
-    Serial.print("\nTime delayy :");
-    Serial.print(countConnect);
+      Serial.print("\nTime delayy :");
+      Serial.println(countConnect);
       if (lock != 1) {
         if (countConnect == timeLockAll) {
           lockAll();
-          Serial.print("\n off all");
+          Serial.println("\n off all");
           countConnect = countConnect + 1;
         } else {
           if (countConnect >= timeLockAll - 5 && countConnect <= timeLockAll + 1) {
-            notification(1);
             digitalWrite(A4, LOW);
             delay(100);
-            Serial.print("\n Warning off");
+            Serial.println("\n Warning off");
           }
           if (powerTime == 1) {
             // code long lick
@@ -161,30 +307,6 @@ void delayMililis() {
     }
   }
 }
-void onClick() {
-  if (countConnect <= timeLockAll && lock == 0 ) {
-    startPower();
-    notification(2);
-  } else if (powerTime == 1) {
-    startPower();
-    notification(2);
-  }
-}
-void longClick() {
-  if (lock != 1) {
-    lock = 1;
-    countConnect = timeLockAll + 3;
-    lockAll();
-    notification(4);
-  }
-}
-void doubleLick() {
-  Serial.println("\non power start");
-  startPower();
-  delay(500);
-  startUp(1000);
-  notification(2);
-}
 void startUp(int time) {
   if (lock != 1) {
     digitalWrite(pinStartUp, HIGH);
@@ -194,10 +316,10 @@ void startUp(int time) {
   }
 }
 void evenCoi(int time) {
-  digitalWrite(pinCoi, HIGH);
-  digitalWrite(pinCoi, LOW);
+  digitalWrite(pinHaza, HIGH);
+  digitalWrite(pinHaza, LOW);
   delay(time);
-  digitalWrite(pinCoi, HIGH);
+  digitalWrite(pinHaza, HIGH);
 }
 void startPower() {
   if (lock != 1) {
@@ -209,6 +331,7 @@ void startPower() {
       } else {
         digitalWrite(pinPower, HIGH);
         digitalWrite(A4, LOW);
+        statusMotor = false;
         Serial.print("\n POWER OFF");
       }
     } else {
@@ -219,10 +342,12 @@ void startPower() {
         } else {
           digitalWrite(pinPower, HIGH);
           Serial.print("\n POWER OFF");
+          statusMotor = false;
         }
       } else {
         digitalWrite(pinPower, HIGH);
         Serial.print("\n POWER OFF");
+        statusMotor = false;
       }
     }
   }
@@ -231,21 +356,20 @@ void lockAll() {
   Serial.print("\nLock ALL");
   powerTime = 0;
   digitalWrite(A4, LOW);
-  digitalWrite(pinCoi, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinDen, HIGH);
   digitalWrite(pinStartUp, HIGH);
   statusMotor = false;
-  notification(6);
+  notification(4, 200);
 }
 
-void notification(int n) {
-  //  for (int i = 0; i < n; i++) {
-  //    digitalWrite(A0, HIGH);
-  //    delay(200);
-  //    digitalWrite(A0, LOW);
-  //    delay(200);
-  //  }
+void notification(int n, int time) {
+  for (int i = 0; i < n; i++) {
+    digitalWrite(A5, HIGH);
+    delay(time);
+    digitalWrite(A5, LOW);
+    delay(time);
+  }
 }
 void checkData(char  data) {
   switch (data) {
@@ -255,112 +379,105 @@ void checkData(char  data) {
       break;
     case '3':
       Serial.print("\n nhip 2");
-      evenCoi(200);
-      delay(300);
-      evenCoi(200);
-      delay(100);
-      evenCoi(200);
-      delay(200);
-      evenCoi(200);
-      notification(2);
+      notiHaza(2, 400);
       break;
-    case '4':
-      Serial.print("\n nhip 3");
-      digitalWrite(A0, HIGH);
-      delay(2000);
-      digitalWrite(A0, LOW);
-      break;
-    case '5':
-      notification(2);
-      Serial.print("\n Coi 1s");
-      evenCoi(1000);
-      break;
-    case '6':
-      notification(2);
-      Serial.print("\n Coi 2s");
-      evenCoi(2000);
-      break;
-    case '7':
-      notification(2);
-      Serial.print("\n Coi 3s");
-      evenCoi(3000);
-      break;
-    case '8':
-      notification(2);
-      Serial.print("\n Coi 4s");
-      evenCoi(4000);
-      break;
-    case '9':
-      notification(2);
-      Serial.print("\n Coi 5s");
-      evenCoi(5000);
-      break;
+    //    case '4':
+    //      Serial.print("\n nhip 3");
+    //      digitalWrite(A0, HIGH);
+    //      delay(2000);
+    //      digitalWrite(A0, LOW);
+    //      break;
+    //    case '5':
+    //      notification(2, 200);
+    //      Serial.print("\n Coi 1s");
+    //      evenCoi(1000);
+    //      break;
+    //    case '6':
+    //      notification(2, 200);
+    //      Serial.print("\n Coi 2s");
+    //      evenCoi(2000);
+    //      break;
+    //    case '7':
+    //      notification(2, 200);
+    //      Serial.print("\n Coi 3s");
+    //      evenCoi(3000);
+    //      break;
+    //    case '8':
+    //      notification(2, 200);
+    //      Serial.print("\n Coi 4s");
+    //      evenCoi(4000);
+    //      break;
+    //    case '9':
+    //      notification(2, 200);
+    //      Serial.print("\n Coi 5s");
+    //      evenCoi(5000);
+    //      break;
     ////////////// Đề
     case 'a':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 1s");
       startUp(1000);
       break;
     case 'b':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 2s");
       startUp(2000);
       break;
     case 'c':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 3s");
       startUp(3000);
       break;
     case 'd':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 4s");
       startUp(4000);
       break;
     case 'e':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 5s");
       startUp(5000);
       break;
     case 'f':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 6s");
       startUp(6000);
       break;
     case 'g':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 7s");
       startUp(7000);
       break;
     case 'h':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n De 8s");
       startUp(8000);
       break;
     ////////////////// power
     case 'i': //// click
-      notification(2);
+      notification(2, 200);
       Serial.print("\n  Power now");
       startPower();
       break;
     case 'k': // long click
       Serial.print("\n  Power long time");
       powerTime = 1;
-      notification(4);
+      notification(4, 200);
 
       break;
     case 'l':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n  Power 3");
       //      powerTime = 1;
       //      startPower();
       break;
     //////////////// Screen
     case 'm':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n Chi tim xe");
       break;
     case 'n':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n tim xe bat nguon");
       digitalWrite(pinPower, LOW);
       break;
@@ -373,35 +490,47 @@ void checkData(char  data) {
           startUp(1000);
         }
       }
-      notification(2);
+      notification(2, 200);
       break;
     case 'p':
-      notification(2);
+      notification(2, 200);
       Serial.print("\n tim xe coi 1s ");
       evenCoi(1000);
       break;
     /// bảo vệ
     case 'w':
       Serial.println("\n Bật bảo vệ");
-      notification(4);
+      notification(4, 200);
       guard = 1;
       break;
     //////////////  Connect
     case 'x':
       countConnect = 0;
-      notification(1);
+      //      notification(1, 200);
       Serial.print("\n smart phone runing");
       break;
     case 'v':    /// lock
       lock = 1;
       countConnect = timeLockAll + 3;
       lockAll();
-      notification(5);
+      notification(5, 200);
       break;
     case 't': /// unlock
       lock = 0;
       countConnect = 0;
-      notification(2);
+      notification(2, 200);
+      break;
+    case 'z':
+
+      digitalWrite(pinPower, LOW);
+      Serial.print("\n POWER ON");
+      delay(1500);
+      Serial.print("\n đề xe");
+      powerTime = 0;
+      guardMotor = false;
+      digitalWrite(pinStartUp, LOW);
+      delay(1500); ///////////////////////// thời gian đề xe
+      digitalWrite(pinStartUp, HIGH);
       break;
   }
 }
