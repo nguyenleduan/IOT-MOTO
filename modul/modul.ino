@@ -3,15 +3,15 @@
 
 SoftwareSerial BTSerial(3, 2); // RX | TX  --->TX  | RX (HC-05)
 
-OneButton button (9, true); // vàng
+OneButton button (A7, true); // vàng
 OneButton buttonYenXe (11, true); // vàng
 OneButton buttonRF1 (8, false); // pin rf 1 | 1 remote
-OneButton buttonRF2 (6, false); // pin rf 3 | 2 remote
-//OneButton buttonRF3 (8, false); // pin rf 4 | 3 remote
+OneButton buttonRF2 (7, false); // pin rf 3 | 2 remote
+OneButton buttonRF3 (6, false); // pin rf 4 | 3 remote
 //OneButton buttonRF4 (9 , false); // pin rf 2 | 4 remote
 #define PinConnectBluetooth 4
-#define PinGuard 10
-#define PinLedButton A4 // xanh lá
+//#define PinGuard 10
+#define PinLedButton A0// xanh lá 9 KIET
 #define PinCoi A5
 #define PinOutYen 12
 int countGuard = 0;
@@ -19,8 +19,7 @@ int countNotGuard = 0;
 int state = 0;
 int  pinPower = A1;
 int  pinHaza = A2;
-int  pinStartUp = A3;
-int  pinDen = 7;
+int  pinStartUp = A3; 
 int countConnect = 0;
 unsigned long hientai = 0;
 unsigned long thoigian;
@@ -45,9 +44,12 @@ void setup()
   button.attachDoubleClick(doubleLick);
   button.attachMultiClick(attachMultiClicks);
   /////////////////////Yen xe /////////
-  buttonYenXe.attachClick(OnClickYenxe);
+  buttonYenXe.attachMultiClick(OnLongClickYenXe);
 
-  buttonYenXe.attachLongPressStart(OnLongClickYenXe);
+  buttonYenXe.attachClick(onClick);
+
+  buttonYenXe.attachDoubleClick(doubleLick);
+  buttonYenXe.attachLongPressStart(OnClickYenxe);
 
   //  buttonYenXe.attachDoubleClick(doubleLick);
 
@@ -57,25 +59,26 @@ void setup()
   buttonRF1.attachClick(onClickRF1) ; // bật tắt nguồn
   buttonRF1.attachLongPressStart(longClickRF1); // bật máy đề xe
   /// button remote 2
+  
   buttonRF2.attachClick(onClickRF2) ;  // bật tắt trạng thái
   buttonRF2.attachLongPressStart(longClickRF2); // bật tắt chống trộm
-
+  /// BUTTON REMOTE 3
+  buttonRF3.attachClick(onClickRF3) ;
   pinMode(PinOutYen, OUTPUT);
   pinMode(pinHaza, OUTPUT);
   pinMode(pinPower, OUTPUT);
   pinMode(pinStartUp, OUTPUT);
-  pinMode(pinDen, OUTPUT);
-  pinMode(PinGuard, INPUT);
-  pinMode(PinCoi, OUTPUT);
-  pinMode(A0, OUTPUT);
+  pinMode(PinLedButton, OUTPUT);
+//  pinMode(PinGuard, INPUT);
+  pinMode(PinCoi, OUTPUT); 
   pinMode(PinLedButton, OUTPUT);
   pinMode(PinConnectBluetooth, INPUT);
   digitalWrite(PinOutYen, LOW);
   digitalWrite(pinHaza, HIGH);
   digitalWrite(pinPower, HIGH);
   digitalWrite(pinStartUp, HIGH);
-  digitalWrite(pinDen, HIGH);
-  //  digitalWrite(PinCoi, HIGH);
+  digitalWrite(PinLedButton, HIGH);
+    digitalWrite(PinCoi, HIGH);
   notification(3, 400);
 }
 void loop()
@@ -90,13 +93,14 @@ void loop()
 
   //  delay(5000);
 
-  if (guardMotor) {
-    chongtrom();
-  }
+//  if (guardMotor) {
+//    chongtrom();
+//  }
   buttonYenXe.tick();
   button.tick();
   buttonRF1.tick();
   buttonRF2.tick();
+  buttonRF3.tick();
   delayMililis();
   if (BTSerial.available()) {
     char c = BTSerial.read();
@@ -196,6 +200,13 @@ void longClickRF2() {
     haza(2);
   }
 }
+//////////////////////////////////////////////////////////// action RF 3
+void onClickRF3() { 
+  Serial.println("Mở yên");
+  digitalWrite(PinOutYen, HIGH);
+  delay(1000);
+  digitalWrite(PinOutYen, LOW);
+} 
 ////////////////////////////////////////////////////////////////// Button
 void onClick() {
   Serial.println("\nButton click");
@@ -238,31 +249,31 @@ void notiHaza(int n, int time) {
 }
 
 void chongtrom() {
-  if (digitalRead(PinGuard) == LOW) {
-    countGuard ++;
-    if (countGuard == 1) {
-      Serial.print("\n----- countGuard - 1 --------");
-      notiHaza(2, 400);
-      delay(1000);
-    }
-    if (countGuard == 2) {
-      Serial.print("\n----- countGuard - 2 --------");
-      notiHaza(3, 400);
-      delay(1000);
-    }
-    if (countGuard >= 3) {
-      Serial.print("\n----- countGuard - 3 --------");
-      notiHaza(1, 10000);
-      delay(1000);
-      countGuard = 0;
-    }
-  } else {
-    countNotGuard ++;
-    if (countNotGuard >= 200) {
-      Serial.print("\n----- countGuard - 0 --------");
-      countNotGuard = 0;
-    }
-  }
+//  if (digitalRead(PinGuard) == LOW) {
+//    countGuard ++;
+//    if (countGuard == 1) {
+//      Serial.print("\n----- countGuard - 1 --------");
+//      notiHaza(2, 400);
+//      delay(1000);
+//    }
+//    if (countGuard == 2) {
+//      Serial.print("\n----- countGuard - 2 --------");
+//      notiHaza(3, 400);
+//      delay(1000);
+//    }
+//    if (countGuard >= 3) {
+//      Serial.print("\n----- countGuard - 3 --------");
+//      notiHaza(1, 10000);
+//      delay(1000);
+//      countGuard = 0;
+//    }
+//  } else {
+//    countNotGuard ++;
+//    if (countNotGuard >= 200) {
+//      Serial.print("\n----- countGuard - 0 --------");
+//      countNotGuard = 0;
+//    }
+//  }
 
 
 }
@@ -356,8 +367,7 @@ void lockAll() {
   Serial.print("\nLock ALL");
   powerTime = 0;
   digitalWrite(A4, LOW);
-  digitalWrite(pinPower, HIGH);
-  digitalWrite(pinDen, HIGH);
+  digitalWrite(pinPower, HIGH); 
   digitalWrite(pinStartUp, HIGH);
   statusMotor = false;
   notification(4, 200);
